@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -44,7 +45,7 @@ public class MainActivity extends Activity implements PaytmSDKCallbackListener {
      * Please read readme file before starting
      */
 
-    EditText edtTxn, edtOrderid, edtMid, edtAmount;
+    EditText edtTxn, edtOrderid, edtMid, edtAmount, clientId;
     private CheckBox cbStaging;
     private PaytmPaymentsUtilRepository paymentsUtilRepository;
 
@@ -58,6 +59,7 @@ public class MainActivity extends Activity implements PaytmSDKCallbackListener {
         edtOrderid = findViewById(R.id.edt_orderid);
         edtAmount = findViewById(R.id.edt_amount);
         cbStaging = findViewById(R.id.cb_staging);
+        clientId = findViewById(R.id.edt_client_id);
 
         checkAndRequestSmsPermission();
         findViewById(R.id.startTransaction).setOnClickListener(new View.OnClickListener() {
@@ -95,9 +97,13 @@ public class MainActivity extends Activity implements PaytmSDKCallbackListener {
      */
     private void fetchAuthCode() {
         if (paymentsUtilRepository.isPaytmAppInstalled(this)) {
-            String server = "pg-mid-test-prod";
-            String authCode = paymentsUtilRepository.fetchAuthCode(this, server);
-            Toast.makeText(this, "authCode = " + authCode, Toast.LENGTH_LONG).show();
+            if(clientId.getText().toString().isEmpty()){
+                Toast.makeText(this,"Enter Client id",Toast.LENGTH_LONG).show();
+                return;
+            }
+            String code = paymentsUtilRepository.fetchAuthCode(this, clientId.getText().toString());
+
+            Toast.makeText(this, "authCode = " + code, Toast.LENGTH_LONG).show();
             //if auth code is fetched then pass it to your server while create transaction token to access all methods
         } else {
             //you can't use wallet, UPI push and saved cards methods but you can generate transaction token without it
@@ -127,6 +133,11 @@ public class MainActivity extends Activity implements PaytmSDKCallbackListener {
         String mid = edtMid.getText().toString();
         String amount = edtAmount.getText().toString();
         String txn = edtTxn.getText().toString();
+
+        if(mid.isEmpty()|| amount.isEmpty()|| txn.isEmpty() || orderId.isEmpty()){
+            Toast.makeText(this,"Enter mid, amount, orderId, Transaction token to proceed further",Toast.LENGTH_LONG).show();
+            return;
+        }
 
         Intent intent = new Intent(this, InstrumentActivity.class);
         intent.putExtra("orderId", orderId);
