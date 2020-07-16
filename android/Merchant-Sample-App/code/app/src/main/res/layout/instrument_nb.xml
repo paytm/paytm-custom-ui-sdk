@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="6dp">
+
+    <EditText
+        android:id="@+id/edt_nb"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dimen_60dp"
+        android:hint="Enter Netbanking code" />
+
+    <Button
+        android:id="@+id/proceed_nb"
+        style="@style/textViewLight"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/paytm_blue"
+        android:text="@string/proceed" />
+
+</LinearLayout>

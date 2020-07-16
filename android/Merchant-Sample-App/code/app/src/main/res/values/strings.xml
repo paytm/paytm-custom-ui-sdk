@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">MerchantSampleApp</string>
+    <string name="fetch_emi_details">Fetch Emi Details</string>
+    <string name="proceed">Proceed</string>
+</resources>

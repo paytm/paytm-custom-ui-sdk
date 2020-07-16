@@ -1,0 +1,714 @@
+package com.paytm.merchantsampleapp
+
+import android.app.AlertDialog
+import android.content.Context
+import android.content.Intent
+import android.content.res.Configuration
+import android.net.Uri
+import android.os.Bundle
+import android.text.Editable
+import android.text.TextUtils
+import android.text.TextWatcher
+import android.util.Log
+import android.view.LayoutInflater
+import android.view.View
+import android.widget.*
+import androidx.appcompat.app.AppCompatActivity
+import com.paytm.merchantsampleapp.model.BinDetail
+import com.paytm.merchantsampleapp.model.VpaAccountDetail
+import com.paytm.merchantsampleapp.model.VpaBankAccountDetail
+import com.android.volley.VolleyError
+import com.google.gson.Gson
+import kotlinx.android.synthetic.main.activity_instruments.*
+import kotlinx.android.synthetic.main.instrument_card.*
+import kotlinx.android.synthetic.main.instrument_nb.*
+import kotlinx.android.synthetic.main.instrument_upi.*
+import kotlinx.android.synthetic.main.saved_card_view.*
+import net.one97.paytm.nativesdk.PaytmSDK
+import net.one97.paytm.nativesdk.Utils.PayMethodType
+import net.one97.paytm.nativesdk.Utils.Server
+import net.one97.paytm.nativesdk.app.PaytmSDKCallbackListener
+import net.one97.paytm.nativesdk.dataSource.PaymentsDataImpl
+import net.one97.paytm.nativesdk.dataSource.models.*
+import net.one97.paytm.nativesdk.instruments.upicollect.models.UpiOptionsModel
+import net.one97.paytm.nativesdk.paymethods.datasource.PaymentMethodDataSource
+import net.one97.paytm.nativesdk.transcation.model.TransactionInfo
+import org.json.JSONObject
+
+class InstrumentActivity : AppCompatActivity(), View.OnClickListener, PaytmSDKCallbackListener {
+
+    /*
+    * Please read readme file before starting
+    */
+
+    private var paytmSDK: PaytmSDK? = null
+    private var vpaDetail: List<VpaAccountDetail>? = emptyList()
+    private var vpaBankDetail: List<VpaBankAccountDetail>? = emptyList()
+    private var binResponse: JSONObject? = null
+    private var bankCode: String? = null
+    private var channelCode: String? = null
+    private lateinit var paymentMode: String
+    private val cardTypes = arrayOf("Credit Card", "Debit Card")
+
+    private var upiAppListAdapter: UpiAppListAdapter? = null
+    private var upiAppsInstalled: ArrayList<UpiOptionsModel>? = null
+
+    private lateinit var mid: String
+    private lateinit var txnToken: String
+    private var pd: AlertDialog? = null
+
+
+    private val cardExpiryTextWatcher = object : TextWatcher {
+        override fun afterTextChanged(characters: Editable?) {
+            if (characters?.length?.compareTo(0) ?: -1 > 0 && characters?.length == 3) {
+                val c = characters[characters.length - 1]
+                if ('/' == c) {
+                    characters.delete(characters.length - 1, characters.length)
+                }
+            }
+            if (characters?.length?.compareTo(0) ?: -1 > 0 && characters?.length == 3) {
+                val c = characters[characters.length - 1]
+                if (Character.isDigit(c)) {
+                    characters.insert(characters.length - 1, '/'.toString())
+                }
+            }
+        }
+
+        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+
+        }
+
+        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+
+        }
+    }
+
+    private val cardNumberTextWatcher = object : TextWatcher {
+        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+
+        }
+
+        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+
+        }
+
+        override fun afterTextChanged(s: Editable?) {
+            val cardNumber = s.toString()
+            val cardLength = cardNumber.length
+            if (cardNumber.length >= 6 && binResponse == null) {
+                getBinResponse(cardNumber)
+            } else if (cardLength < 6) {
+                binResponse = null
+            }
+        }
+    }
+
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_instruments)
+        initPaytmSDK()
+        init()
+        initUpiPushCards()
+        setUpiIntentItems()
+    }
+
+    // Creating paytmSDK instance to fetch allowed options and details
+    private fun initPaytmSDK() {
+        mid = intent.getStringExtra("mid") ?: ""
+        val orderId = intent.getStringExtra("orderId")
+        val amount = intent.getStringExtra("amount") ?: "0"
+        txnToken = intent.getStringExtra("txnToken") ?: ""
+        val isStaging = intent.getBooleanExtra("isStaging",false)
+
+        val builder =
+            PaytmSDK.Builder(
+                this,
+                mid,
+                orderId,
+                txnToken,
+                java.lang.Double.parseDouble(amount),
+                this
+            )
+
+        //no need to add setMerchantCallbackUrl is you are using static paytm callback -> Constants.callBackUrl + orderId
+//        builder.setMerchantCallbackUrl("custom url only if callback is required on you page")
+
+        if (isStaging) {
+            PaytmSDK.setServer(Server.STAGING)
+        } else {
+            PaytmSDK.setServer(Server.PRODUCTION)
+        }
+
+        paytmSDK = builder.build()
+    }
+
+    private fun init() {
+        saved_instrument.setOnClickListener(this)
+        fetch_nb_channels.setOnClickListener(this)
+        proceed_card.setOnClickListener(this)
+        proceed_saved_card.setOnClickListener(this)
+        proceed_wallet.setOnClickListener(this)
+        proceed_nb.setOnClickListener(this)
+        proceed_upi.setOnClickListener(this)
+
+        action_emi_details.setOnClickListener(this)
+        saved_nb.setOnClickListener(this)
+        saved_vpa_upi_collect.setOnClickListener(this)
+
+        card_expiry.addTextChangedListener(cardExpiryTextWatcher)
+        card_expiry.setRawInputType(Configuration.KEYBOARD_QWERTY)
+
+        card_number.addTextChangedListener(cardNumberTextWatcher)
+
+        card_type_view.setOnClickListener { card_container.toggleVisibility() }
+        saved_card_type_view.setOnClickListener { card1_container.toggleVisibility() }
+
+        setUpCardSpinner()
+    }
+
+    // if allowed setting upi push view for available upi of current users
+    private fun initUpiPushCards() {
+        vpaDetail =
+            AppRepo.cjPayMethodResponse?.body?.merchantPayOption?.upiProfile?.respDetails?.profileDetail?.vpaDetails
+        vpaBankDetail =
+            AppRepo.cjPayMethodResponse?.body?.merchantPayOption?.upiProfile?.respDetails?.profileDetail?.bankAccounts
+
+        vpaBankDetail?.forEachIndexed { i, item ->
+            val inflater = LayoutInflater.from(this)
+            val upiItem = inflater.inflate(R.layout.upi_push_item, upi_push_container, false)
+            val tvBalance = upiItem.findViewById<Button>(R.id.tvBalance)
+            val tvUpiPushPay = upiItem.findViewById<Button>(R.id.tvUpiPushPay)
+            val tvSetMpin = upiItem.findViewById<Button>(R.id.tvSetMpin)
+            upiItem.findViewById<TextView>(R.id.tvTitle).text = item.bank
+            upi_push_container.addView(upiItem)
+
+            tvBalance.tag = i
+            tvBalance.setOnClickListener(this)
+
+            tvUpiPushPay.tag = i
+            tvUpiPushPay.setOnClickListener(this)
+
+            tvSetMpin.tag = i
+            tvSetMpin.setOnClickListener(this)
+        }
+    }
+
+    //Adding available UPI apps like paytm, google pay etd
+    private fun setUpiIntentItems() {
+        try {
+            val upiDeepLink = Uri.Builder()
+            upiDeepLink.scheme("upi").authority("pay")
+
+            upiAppsInstalled =
+                PaytmSDK.getPaymentsHelper().getUpiAppsInstalled(this)
+            if (upiAppsInstalled != null) {
+                upiAppListAdapter =
+                    UpiAppListAdapter(upiAppsInstalled,
+                        // It calls startActivityForResult with request code 187 - REQUEST_CODE_UPI_APP
+                        UpiAppListAdapter.OnClickUpiApp { upiOptionsModel, _ ->
+                            val upiIntentDataRequestModel = UpiIntentRequestModel(
+                                "NONE",
+                                upiOptionsModel.appName,
+                                upiOptionsModel.resolveInfo.activityInfo
+                            )
+                            showDialog()
+                            paytmSDK?.startTransaction(
+                                this@InstrumentActivity, upiIntentDataRequestModel
+                            )
+                        })
+
+                val gridLayoutManager =
+                    object : androidx.recyclerview.widget.GridLayoutManager(this, 5) {
+                        override fun canScrollVertically(): Boolean {
+                            return false
+                        }
+                    }
+
+                upi_apps.apply {
+                    layoutManager = gridLayoutManager
+                    adapter = upiAppListAdapter
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    override fun onClick(v: View?) {
+        when (v?.id) {
+            R.id.saved_instrument -> {
+                fetchIfSavedInstruments()
+            }
+            R.id.fetch_nb_channels -> {
+                fetchNetBankingList()
+            }
+            R.id.tvUpiPushPay -> {
+                val tag = v.tag as? Int ?: 0
+                //Using first element from vpaDetail list only. Change in future if multiple VPA are allowed
+                val vpaDetail = vpaDetail?.get(0)
+                val vpaBankDetail = vpaBankDetail?.get(tag)
+                goForUpiPushTransaction(vpaDetail, vpaBankDetail)
+
+            }
+            R.id.tvSetMpin -> {
+                val tag = v.tag as? Int ?: 0
+
+                val vpaDetail = vpaDetail?.get(0)
+                val vpaBankDetail = vpaBankDetail?.get(tag)
+
+                val vpaDetailString = Gson().toJson(vpaBankDetail!!)
+
+                val upiDataRequestModel =
+                    UpiDataRequestModel(vpaDetail?.name!!, vpaDetailString!!, 101)
+                paytmSDK?.setUpiMpin(this, upiDataRequestModel)
+            }
+            R.id.tvBalance -> {
+                val tag = v.tag as? Int ?: 0
+
+                val vpaDetail = vpaDetail?.get(0)
+                val vpaBankDetail = vpaBankDetail?.get(tag)
+
+                val vpaDetailString = Gson().toJson(vpaBankDetail)
+
+                val upiDataRequestModel =
+                    UpiDataRequestModel(vpaDetail?.name!!, vpaDetailString!!, 102)
+                paytmSDK?.fetchUpiBalance(this, upiDataRequestModel)
+            }
+            R.id.proceed_card, R.id.proceed_saved_card, R.id.proceed_wallet, R.id.proceed_nb, R.id.proceed_upi -> {
+                startTransaction(v.id)
+            }
+            R.id.action_emi_details -> {
+                fetchEmiDetails()
+            }
+            R.id.saved_nb -> {
+                var bank = PaytmSDK.getPaymentsUtilRepository().getLastNBSavedBank()
+                bank = if (bank.isNullOrEmpty()) {
+                    "No Saved Bank Found"
+                } else {
+                    "Last Saved Bank: $bank"
+                }
+                showToast(bank)
+            }
+            R.id.saved_vpa_upi_collect -> {
+                var vpa = PaytmSDK.getPaymentsUtilRepository().getLastSavedVPA()
+                vpa = if (vpa.isNullOrEmpty()) {
+                    "No Saved VPA Found"
+                } else {
+                    "Last Saved VPA: $vpa"
+                }
+                showToast(vpa)
+            }
+        }
+    }
+
+    // when paytm app is available this checks if there is any saved instruments
+    private fun fetchIfSavedInstruments() {
+        val hasSavedInstrument = PaytmSDK.getPaymentsUtilRepository()
+            .userHasSavedInstruments(this, mid)
+        showToast("Has instruments : $hasSavedInstrument")
+    }
+
+    // fetch available net banking channel code
+    private fun fetchNetBankingList() {
+        try {
+            PaytmSDK.getPaymentsHelper()
+                .getNBList(object : PaymentMethodDataSource.Callback<JSONObject> {
+                    override fun onResponse(response: JSONObject?) {
+                        showToast(getMessage(response))
+                    }
+
+                    override fun onErrorResponse(error: VolleyError?, errorInfo: JSONObject?) {
+                        showToast(
+                            "Error fetching NB List :" + getMessage(errorInfo)
+                        )
+                    }
+                })
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+
+    //Start upi push transaction
+    private fun goForUpiPushTransaction(
+        vpaDetail: VpaAccountDetail?,
+        vpaBankDetail: VpaBankAccountDetail?
+    ) {
+        showDialog()
+        vpaDetail?.let {
+            val paymentFlow = AppRepo.cjPayMethodResponse?.body?.paymentFlow ?: "NONE"
+            val merchantDetails = AppRepo.cjPayMethodResponse?.body?.merchantDetails
+
+            val merchantDetailsString = Gson().toJson(merchantDetails)
+            val bankAccountString = Gson().toJson(vpaBankDetail!!)
+
+
+            val upiPushRequestModel =
+                UpiPushRequestModel(
+                    paymentFlow = paymentFlow,
+                    upiId = vpaDetail.name!!,
+                    bankAccountJson = bankAccountString,
+                    merchantDetailsJson = merchantDetailsString,
+                    requestCode = 100
+                )
+
+            paytmSDK?.startTransaction(this, upiPushRequestModel)
+        } ?: kotlin.run {
+            dismissDialog()
+            showToast("Bank rAccount details are null")
+        }
+    }
+
+    //Start new card transaction
+    private fun goForNewCardTransaction(): PaymentRequestModel {
+        val shouldSaveCard = cb_save_card.isChecked
+        val cardNumber = card_number.text?.toString()
+        val cardCvv = card_cvv.text?.toString()
+        val cardExpiry = card_expiry?.text.toString()
+
+        val otpChecked = rg_auth_mode_nc.findViewById<RadioButton>(R.id.rb_otp).isChecked
+        val pinChecked = rg_auth_mode_nc.findViewById<RadioButton>(R.id.rb_pin).isChecked
+        var authMode = "otp"
+        if (otpChecked) {
+            authMode = "otp"
+        } else if (pinChecked) {
+            authMode = "pin"
+        }
+
+        val cardPayModeType = if (card_type.selectedItem.toString() == "Credit Card") {
+            PayMethodType.CREDIT_CARD
+        } else {
+            PayMethodType.DEBIT_CARD
+        }
+
+        paymentMode = getBinPaymentMode(
+            binResponse,
+            cardPayModeType == PayMethodType.CREDIT_CARD
+        )
+
+        return CardRequestModel(
+            paymentMode,
+            AppRepo.cjPayMethodResponse?.body?.paymentFlow!!,
+            cardNumber,
+            null,
+            cardCvv!!,
+            cardExpiry,
+            bankCode,
+            channelCode,
+            authMode,
+            null,
+            shouldSaveCard
+        )
+    }
+
+    // get type of card visa, mastercard etc
+    private fun getBinPaymentMode(binResponse: JSONObject?, isCreditCardLayout: Boolean): String {
+        if (binResponse != null) {
+            val binDetail = getBinDetail(binResponse)
+            if (binDetail != null) {
+                val binPaymentMode = binDetail.paymentMode
+                if (!TextUtils.isEmpty(binPaymentMode)) {
+                    return binPaymentMode
+                }
+            }
+        }
+        return if (isCreditCardLayout) PayMethodType.CREDIT_CARD else PayMethodType.DEBIT_CARD
+    }
+
+    private fun getBinDetail(response: JSONObject): BinDetail? {
+        try {
+            return Gson().fromJson(response.toString(), BinDetail::class.java)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return null
+    }
+
+    // card that is already saved at user end
+    private fun goForSavedCardTransaction(): PaymentRequestModel {
+        val cardId = saved_card_id.text?.toString()
+        val cardCvv = saved_card_cvv.text?.toString()
+        val emiChannelId: String? = saved_card_emichannelId?.text.toString()
+
+        val cardPayModeType = if (saved_card_type.selectedItem.toString() == "Credit Card") {
+            PayMethodType.CREDIT_CARD
+        } else {
+            PayMethodType.DEBIT_CARD
+        }
+
+        paymentMode = cardPayModeType
+
+        val otpChecked = rg_auth_mode_sc.findViewById<RadioButton>(R.id.rb_otp).isChecked
+        val pinChecked = rg_auth_mode_sc.findViewById<RadioButton>(R.id.rb_pin).isChecked
+        var authMode = "otp"
+        if (otpChecked) {
+            authMode = "otp"
+        } else if (pinChecked) {
+            authMode = "pin"
+        }
+
+        val bankDetails = getBankDetails(cardId)
+        channelCode = bankDetails?.get("cardScheme")
+        bankCode = bankDetails?.get("bankCode")
+
+        return CardRequestModel(
+            paymentMode,
+            AppRepo.cjPayMethodResponse?.body?.paymentFlow!!,
+            null,
+            cardId,
+            cardCvv!!,
+            null,
+            bankCode,
+            channelCode,
+            authMode,
+            emiChannelId,
+            true
+        )
+    }
+
+
+    // setting PaymentRequestModel for respective transaction
+    private fun startTransaction(id: Int) {
+        showDialog()
+        var paymentRequestModel: PaymentRequestModel? = null
+        when (id) {
+            R.id.proceed_saved_card -> {
+                paymentRequestModel = goForSavedCardTransaction()
+            }
+            R.id.proceed_wallet -> {
+                paymentRequestModel =
+                    WalletRequestModel(AppRepo.cjPayMethodResponse?.body?.paymentFlow!!)
+            }
+
+            R.id.proceed_nb -> {
+                val nbCode = edt_nb.text?.toString()
+                if (!nbCode.isNullOrBlank()) {
+                    paymentRequestModel =
+                        NetBankingRequestModel(
+                            AppRepo.cjPayMethodResponse?.body?.paymentFlow!!,
+                            nbCode
+                        )
+                }
+            }
+
+            R.id.proceed_upi -> {
+                val upiCode = edt_upi.text?.toString()
+                val saveVPA = cb_save_vpa.isChecked
+                if (!TextUtils.isEmpty(upiCode)) {
+                    paymentRequestModel =
+                        UpiCollectRequestModel(
+                            AppRepo.cjPayMethodResponse?.body?.paymentFlow!!,
+                            upiCode!!,
+                            saveVPA
+                        )
+                }
+            }
+            R.id.proceed_card -> {
+                val cardNumber = card_number.text?.toString()
+                if (!cardNumber.isNullOrBlank()) {
+                    paymentRequestModel = goForNewCardTransaction()
+                }
+            }
+        }
+        if (paymentRequestModel != null) {
+            paytmSDK?.startTransaction(this, paymentRequestModel)
+        } else {
+            dismissDialog()
+            showToast("paymentModel is nulll")
+        }
+    }
+
+    //fetch emi details available for card
+    private fun fetchEmiDetails() {
+        showDialog()
+        val cardPayModeType = if (card_type.selectedItem.toString() == "Credit Card") {
+            PayMethodType.CREDIT_CARD
+        } else {
+            PayMethodType.DEBIT_CARD
+        }
+        paymentMode = getBinPaymentMode(
+            binResponse,
+            cardPayModeType == PayMethodType.CREDIT_CARD
+        )
+
+        val channelCode = binResponse?.let { getBinDetail(it)?.issuingBankCode }
+
+        if (!TextUtils.isEmpty(channelCode)) {
+            PaytmSDK.getPaymentsHelper().getEMIDetails(this, channelCode!!, paymentMode,
+                object : PaymentMethodDataSource.Callback<JSONObject> {
+                    override fun onErrorResponse(error: VolleyError?, errorInfo: JSONObject?) {
+                        showToast(
+                            getMessage(errorInfo) ?: "Error fetching EMI details"
+                        )
+                        dismissDialog()
+                    }
+
+                    override fun onResponse(response: JSONObject?) {
+                        val emi = Gson().toJson(response)
+                        tv_emidetails.text = emi
+                        dismissDialog()
+                    }
+                })
+        } else {
+            dismissDialog()
+            showToast("Error fetching card details")
+        }
+    }
+
+    //get bank detail
+    private fun getBankDetails(cardId: String?): HashMap<String, String>? {
+        val result = HashMap<String, String>()
+        val list = AppRepo.cjPayMethodResponse?.body?.merchantPayOption?.savedInstruments
+        if (list != null && list.size > 0) {
+            for (i in 0 until list.size) {
+                if (list[i].cardDetails?.cardId.equals(cardId)) {
+                    result["bankCode"] = list[i].issuingBank
+                    result["cardScheme"] = list[i].channelCode
+                }
+            }
+        }
+        return result
+    }
+
+    //callback for  upi intent result, upi push - checkbalance, pay, setMpin result
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        dismissDialog()
+        if (requestCode == 100 && data != null) {
+            showToast(
+                "${data.getStringExtra("nativeSdkForMerchantMessage")} ${data.getStringExtra("response")}"
+            )
+            finish()
+        } else if (requestCode == 101 && data != null) {
+            showToast(
+                data.getStringExtra("response") ?: ""
+            )
+        } else if (requestCode == 102 && data != null) {
+            showToast(
+                data.getStringExtra("response") ?: ""
+            )
+        } else if (requestCode == 187) {  //SDKConstants.REQUEST_CODE_UPI_APP
+            var status: String? = ""
+            if (data != null && data.extras != null) {
+                status = data.getStringExtra("Status")
+            }
+
+            if (!TextUtils.isEmpty(status) && status.equals("FAILURE", ignoreCase = true)) {
+                showToast("Transaction failed")
+            } else {
+                PaytmSDK.getPaymentsHelper().makeUPITransactionStatusRequest(this, "NONE")
+            }
+        }
+    }
+
+    //setting card spinner credit card and debit card for card transaction
+    private fun setUpCardSpinner() {
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, cardTypes)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        card_type.adapter = adapter
+        saved_card_type.adapter = adapter
+    }
+
+    // read message from api reponse
+    private fun getMessage(response: JSONObject?): String {
+        var resultMsg = ""
+        val body = response?.get("body") as JSONObject
+        if (body.has("resultInfo")) {
+            val resultInfo = body.get("resultInfo") as JSONObject
+            if (resultInfo.has("resultMsg"))
+                resultMsg = resultInfo.get("resultMsg") as String
+        }
+        return resultMsg
+    }
+
+    private fun showToast(context: Context, message: String) {
+        Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+    }
+
+    private fun showToast(message: String) {
+        showToast(this, message)
+    }
+
+    // get callback for payment result
+    override fun onTransactionResponse(p0: TransactionInfo?) {
+        dismissDialog()
+        if (p0 != null) {
+            if (p0.txnInfo != null) {
+                val s = Gson().toJson(p0.txnInfo)
+                showToast(s)
+                Log.d("MainActivity", " onTransactionResponse $s")
+                finish()
+            }
+        }
+    }
+
+    override fun onGenericError(p0: Int, p1: String?) {
+        dismissDialog()
+        finish()
+    }
+
+    override fun networkError() {
+        dismissDialog()
+        finish()
+    }
+
+    override fun onBackPressedCancelTransaction() {
+        dismissDialog()
+        finish()
+    }
+
+
+    private fun getBinResponse(cardSixDigit: String) {
+        PaymentsDataImpl.fetchBinDetails(
+            cardSixDigit, txnToken, "TXN_TOKEN", mid, null,
+            object : PaymentMethodDataSource.Callback<JSONObject> {
+                override fun onResponse(response: JSONObject?) {
+                    onBinResponseApi(response)
+                }
+
+                override fun onErrorResponse(error: VolleyError?, errorInfo: JSONObject?) {
+
+                }
+            })
+    }
+
+    //setting paymentMode from bin response
+    private fun onBinResponseApi(response: JSONObject?) {
+        binResponse = response
+        if (response != null) {
+            val binDetail = getBinDetail(response)
+            bankCode = binDetail?.issuingBankCode
+            channelCode = binDetail?.channelCode
+            binDetail?.paymentMode?.let { paymentMode = it }
+        }
+    }
+
+    private fun View.toggleVisibility() {
+        if (this.visibility == View.VISIBLE) {
+            this.visibility = View.GONE
+        } else {
+            this.visibility = View.VISIBLE
+        }
+    }
+
+    //while closing activity it is necessary to clear paytmSDK instance
+    override fun onDestroy() {
+        super.onDestroy()
+        paytmSDK?.clear()
+    }
+
+    protected fun showDialog() {
+        val dialog = AlertDialog.Builder(this)
+        pd = dialog.create()
+        pd!!.setMessage("please wait")
+        pd!!.show()
+    }
+
+    protected fun dismissDialog() {
+        if (pd != null && pd!!.isShowing) {
+            pd!!.dismiss()
+        }
+    }
+
+}

@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/card_container"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:visibility="visible"
+    tools:visibility="visible">
+
+    <EditText
+        android:id="@+id/card_index"
+        style="@style/textViewLight"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Card Index"
+        android:inputType="number"
+        android:visibility="gone" />
+
+    <EditText
+        android:id="@+id/card_number"
+        style="@style/textViewLight"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Card Number"
+        android:inputType="number" />
+
+    <EditText
+        android:id="@+id/card_cvv"
+        style="@style/textViewLight"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Cvv"
+        android:inputType="number" />
+
+    <EditText
+        android:id="@+id/card_expiry"
+        style="@style/textViewLight"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter Expiry as (MM/YY)" />
+
+    <Spinner
+        android:id="@+id/card_type"
+        style="@style/textViewLight"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <EditText
+        android:id="@+id/emi_channel_id"
+        style="@style/textViewLight"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Emi Plan id" />
+
+    <RadioGroup
+        android:id="@+id/rg_auth_mode_nc"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/dimen_16dp"
+        android:orientation="horizontal">
+
+        <RadioButton
+            android:id="@+id/rb_otp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="OTP" />
+
+        <RadioButton
+            android:id="@+id/rb_pin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="PIN" />
+    </RadioGroup>
+    <CheckBox
+        android:id="@+id/cb_save_card"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/dimen_16dp"
+        android:text="Save card for future transactions"/>
+
+    <Button
+        android:id="@+id/proceed_card"
+        style="@style/textViewLight"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/paytm_blue"
+        android:text="@string/proceed" />
+
+    <Button
+        android:id="@+id/action_emi_details"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:padding="@dimen/dimen_8dp"
+        android:background="@color/white_b8c2cb"
+        android:text="@string/fetch_emi_details" />
+
+    <TextView
+        android:id="@+id/tv_emidetails"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/dimen_4dp" />
+
+
+</LinearLayout>
