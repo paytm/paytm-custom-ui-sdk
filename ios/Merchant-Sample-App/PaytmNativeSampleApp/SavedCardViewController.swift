@@ -53,7 +53,7 @@ class SavedCardViewController:BaseViewController {
                 guard let `self` = self else {
                     return
                 }
-                self.appInvoke.callProcessTransactionAPI(selectedPayModel: AINativeSavedCardParameterModel.init(withTransactionToken: txnToken, orderId: orderId, shouldOpenNativePlusFlow: true, mid: merchantId, flowType: flowType, paymentModes: self.cardTypeSeg.selectedSegmentIndex == 0 ? .debitCard :.creditCard , authMode:  self.authTypeSeg.selectedSegmentIndex == 0 ? .otp :.atm , cardId: cardId, cardNumber: nil, cvv: cardCVV, expiryDate: "", newCard: false, saveInstrument: "0", redirectionUrl: "\(baseUrlString)/theia/paytmCallback"), delegate: self, controller: self)
+                self.appInvoke.callProcessTransactionAPI(selectedPayModel: AINativeSavedCardParameterModel.init(withTransactionToken: txnToken, orderId: orderId, shouldOpenNativePlusFlow: true, mid: merchantId, flowType: flowType, paymentModes: self.cardTypeSeg.selectedSegmentIndex == 0 ? .debitCard :.creditCard , authMode:  self.authTypeSeg.selectedSegmentIndex == 0 ? .otp :.atm , cardId: cardId, cardNumber: nil, cvv: cardCVV, expiryDate: "", newCard: false, saveInstrument: "0", redirectionUrl: "\(baseUrlString)/theia/paytmCallback"), delegate: self)
 
             }
         }

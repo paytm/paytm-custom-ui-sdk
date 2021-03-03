@@ -11,13 +11,32 @@ import PaytmNativeSDK
 
 class UPICollectViewController: BaseViewController {
     
+    enum PollingType {
+        case defaultPolling
+        case customPolling
+    }
+    
+    var pollingType: PollingType = .defaultPolling
+    
     //MARK: IBOutlets
     @IBOutlet weak var vpaAddressTextField: UITextField!
     @IBOutlet weak var switchSaveInstrument: UISwitch!
+    @IBOutlet weak var pollingSwitch: UISwitch!
     
-        
+    
+    @IBAction func switchPollingType(_ sender: Any) {
+        if pollingSwitch.isOn {
+            pollingType = .customPolling
+        }
+        else {
+            pollingType = .defaultPolling
+        }
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        let date = NSDate(timeIntervalSince1970: 1596717607)
+        print(date)
         vpaAddressTextField.text = self.appInvoke.getSavedVPA()
         vpaAddressTextField.delegate = self
     }
@@ -57,7 +76,6 @@ class UPICollectViewController: BaseViewController {
             }
             
             
-            
             //MARK: save current VPA Address for next time autofill
             if vpaAddress != appInvoke.getSavedVPA() {
                 self.appInvoke.saveVPA(vpa: vpaAddress)
@@ -65,36 +83,41 @@ class UPICollectViewController: BaseViewController {
 
             let flowType: AINativePaymentFlow = AINativePaymentFlow(rawValue: (rootVC.flowTypeSegment.titleForSegment(at: rootVC.flowTypeSegment.selectedSegmentIndex) ?? "NONE")) ?? .none
             let baseUrlString = (env == .production) ? kProduction_ServerURL : kStaging_ServerURL
-
+            
+            var amount: CGFloat = 0.0
+            if let floatAmount = Double(rootVC.transactionAmount) {
+                amount = CGFloat(floatAmount)
+            }
 
             rootVC.initiateTransitionToken { (orderId, merchantId, txnToken, ssoToken) in
-                let model = AINativeNUPIarameterModel.init(withTransactionToken: txnToken, orderId: orderId, shouldOpenNativePlusFlow: true, mid: merchantId, flowType: flowType, amount: 1.0, paymentModes: .upi, vpaAddress: vpaAddress, upiFlowType: .collect, merchantInfo: nil, bankDetail: nil, redirectionUrl: "\(baseUrlString)/theia/paytmCallback")
+                let model = AINativeNUPIarameterModel.init(withTransactionToken: txnToken, orderId: orderId, shouldOpenNativePlusFlow: true, mid: merchantId, flowType: flowType, amount: amount, paymentModes: .upi, vpaAddress: vpaAddress, upiFlowType: .collect, merchantInfo: nil, bankDetail: nil, redirectionUrl: "\(baseUrlString)/theia/paytmCallback")
                 
-                //collcect flow for UPI transaction
-                self.appInvoke.callProcessTransitionAPIForCollect(selectedPayModel: model, delegate: self, controller: self, responseCallback: { responseDict in
+                //collcect flow for UPI transaction.
+                //flexible polling handling  using public init UpiCollectConfigurations
+                //shouldAllowCustomPolling = true in case merchant  want to handle his  own polling page
+                //isAutoPolling = true:  if merchant wants sdk to handle polling itself and return completion of upiCollectPollingCompletion after polling completes. to handle response.
+                self.appInvoke.callProcessTransitionAPIForCollect(selectedPayModel: model, delegate: self, upiPollingConfig: UpiCollectConfigurations(shouldAllowCustomPolling: (self.pollingType == .customPolling) ? true : false, isAutoPolling: true), responseCallback: { [weak self]responseDict in
                     
-                    //TODO: For later version:
-                    //MARK: Polling of transactionStatus API
+                    //MARK: Polling of transactionStatus API:
                     //if auto polling
-                    self.appInvoke.upiCollectPollingCompletion = { (status, model) in
+                    self?.appInvoke.upiCollectPollingCompletion = { [weak self](status, model) in
                         print(status)
-                        
-                        let alert = UIAlertController(title: "", message: "transaction " + "\(status)", preferredStyle: .alert)
-                        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-                        
                         switch status {
-                        case .failure: break
-                        case .success: break
+                        case .failure, .success, .timeElapsed:
+                            DispatchQueue.main.async { [weak self] in
+                                let alert = UIAlertController(title: "", message: "transaction " + "\(status)", preferredStyle: .alert)
+                                alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                                self?.present(alert, animated: true, completion: nil)
+
+                            }
+                            
                         default: break
                         }
                     }
                     
                     // else
                     //MARK: here response of process transaction api is provided. If merchant want to call polling api on its own
-                    //                                    !self.appInvoke.UpiCollectConfigurations.autoPolling  {
-                    ////                                        self.appInvoke.
-                    //                                    }
-                    //                                    print(responseDict)
+                    // use appInvoke.pollingForStatus() to call status api. and implement your own polling logic
                 })
                 
             }

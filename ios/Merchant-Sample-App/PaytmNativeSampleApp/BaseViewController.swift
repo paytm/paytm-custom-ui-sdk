@@ -13,8 +13,7 @@ import PaytmNativeSDK
 class BaseViewController: UIViewController {
   
     //MARK: Private Properties
-    let appInvoke = AIHandler()
-    
+    private(set) lazy var appInvoke = AIHandler()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -77,9 +76,23 @@ extension BaseViewController: AIDelegate {
             ? error ?? nil : String(describing: response), preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
         DispatchQueue.main.async {
-            self.navigationController?.popToViewController(self, animated: true)
-            self.present(alert, animated: true, completion: nil)
+            if self.presentedViewController == nil {
+                DispatchQueue.main.async {
+                    self.present(alert, animated: true, completion: nil)
+                }
+            }
+            else {
+                self.presentedViewController?.dismiss(animated: true, completion: {
+                    DispatchQueue.main.async {
+                        self.present(alert, animated: true, completion: nil)
+                    }
+                })
+            }
         }
+    }
+    
+    func openPaymentController(_ controller: UIViewController) {
+        present(controller, animated: true, completion: nil)
     }
 }
 

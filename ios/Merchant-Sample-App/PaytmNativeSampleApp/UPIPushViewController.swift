@@ -19,9 +19,8 @@ class UPIPushViewController: BaseViewController {
             }
         }
     }
+    
     var merchantDetails = [String : Any]()
-
-
     var bankDetails = [String : Any]()
 
     
@@ -42,6 +41,10 @@ class UPIPushViewController: BaseViewController {
             //initiatee Transaction
             rootVC.initiateTransitionToken { (orderId, merchantId, txnToken, ssoToken) in
                 DispatchQueue.main.async {
+                    var amount: CGFloat = 0.0
+                    if let floatAmount = Double(rootVC.transactionAmount) {
+                        amount = CGFloat(floatAmount)
+                    }
                     
                     //REMARK: call upifetchPayOptions api to get upiProfile of the user
                     self.fetchPayOptions(env: env, txnToken: txnToken, orderId: orderId, mid: merchantId) {  (status) in
@@ -55,16 +58,17 @@ class UPIPushViewController: BaseViewController {
                         }
                         
                         // proced paymeent through selectd bank and vpa(bankDetails and vpaAddreess) to a merchant(self.merchantDetails)
-                        self.appInvoke.callProcessTransactionAPIForUPI(selectedPayModel: AINativeNUPIarameterModel.init(withTransactionToken: txnToken, orderId: orderId, shouldOpenNativePlusFlow: true, mid: merchantId, flowType: flowType, amount: 1.0, paymentModes: .upi, vpaAddress: self.vpaAddress, upiFlowType: .push, merchantInfo: self.merchantDetails, bankDetail: self.bankDetails), completion: { (status) in
+                        let upiPollingConfig =  UpiCollectConfigurations(shouldAllowCustomPolling: false, isAutoPolling: true)
+                        self.appInvoke.callProcessTransactionAPIForUPI(selectedPayModel: AINativeNUPIarameterModel.init(withTransactionToken: txnToken, orderId: orderId, shouldOpenNativePlusFlow: true, mid: merchantId, flowType: flowType, amount: amount, paymentModes: .upi, vpaAddress: self.vpaAddress, upiFlowType: .push, merchantInfo: self.merchantDetails, bankDetail: self.bankDetails), upiPollingConfig: upiPollingConfig, delegate: self, completionForPush: { (status) in
                             
                             switch status {
                             case .appNotInstall:
-                                //if app is not installed then use collect flow for UPI payments
-                                DispatchQueue.main.async {
-                                    let model = AINativeNUPIarameterModel.init(withTransactionToken: txnToken, orderId: orderId, shouldOpenNativePlusFlow: true, mid: merchantId, flowType: flowType, amount: 1.0, paymentModes: .upi, vpaAddress: self.vpaAddress, upiFlowType: .collect, merchantInfo: nil, bankDetail: nil, redirectionUrl: "\(baseUrlString)/theia/paytmCallback")
-                                    self.collectFlow(model: model)
-                                }
-                                
+//                                //if app is not installed then use collect flow for UPI payments
+//                                DispatchQueue.main.async {
+//                                    let model = AINativeNUPIarameterModel.init(withTransactionToken: txnToken, orderId: orderId, shouldOpenNativePlusFlow: true, mid: merchantId, flowType: flowType, amount: 3.0, paymentModes: .upi, vpaAddress: self.vpaAddress, upiFlowType: .collect, merchantInfo: nil, bankDetail: nil, redirectionUrl: "\(baseUrlString)/theia/paytmCallback")
+//                                    self.collectFlow(model: model)
+//                                }
+                            print("-----app not install-----")
                             case .inProcess:
                                 self.showError(errorString: "App invoke")
                             case .error:
@@ -72,6 +76,8 @@ class UPIPushViewController: BaseViewController {
                             @unknown default:
                                 break
                             }
+                        }, completionForCollect: {(responseForCollect) in
+                            self.handleForCollectFlow(responseDict: responseForCollect)
                         })
 
                         }
@@ -83,32 +89,55 @@ class UPIPushViewController: BaseViewController {
     
     
     //MARK: USE Collect flow
-    func collectFlow(model: AINativeNUPIarameterModel) {
-            self.appInvoke.callProcessTransitionAPIForCollect(selectedPayModel: model, delegate: self, controller: self, responseCallback: { responseDict in
-                
-                //MARK: Polling of transactionStatus API
-                //if auto polling
-                self.appInvoke.upiCollectPollingCompletion = { (status, model) in
-                    print(status)
-                    
-                    let alert = UIAlertController(title: "", message: "transaction " + "\(status)", preferredStyle: .alert)
-                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-                    
-                    switch status {
-                    case .failure: break
-                    case .success: break
-                    default: break
-                    }
-                }
-                
-                // else
-                //MARK: here response of process transaction api is provided. If merchant want to call polling api on its own
-                //                                    !self.appInvoke.UpiCollectConfigurations.autoPolling  {
-                ////                                        self.appInvoke.
-                //                                    }
-                //                                    print(responseDict)
-            })
+    func handleForCollectFlow(responseDict: [String:Any]) {
+        //MARK: Polling of transactionStatus API
+        //if auto polling
+        self.appInvoke.upiCollectPollingCompletion = { (status, model) in
+            print(status)
+            let alert = UIAlertController(title: "", message: "transaction " + "\(status)", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+            
+            switch status {
+            case .failure: break
+            case .success: break
+            default: break
+            }
+        }
+        
+        // else
+        //MARK: here response of process transaction api is provided. If merchant want to call polling api on its own
+        //!self.appInvoke.UpiCollectConfigurations.autoPolling  {
+        ////self.appInvoke.
+        //}
+        //print(responseDict)
     }
+    
+    
+//    func collectFlow(model: AINativeNUPIarameterModel) {
+//        self.appInvoke.callProcessTransitionAPIForCollect(selectedPayModel: model, delegate: self, upiPollingConfig: UpiCollectConfigurations(shouldAllowCustomPolling: true, isAutoPolling: true), responseCallback: { responseDict in
+//
+//                //MARK: Polling of transactionStatus API
+//                //if auto polling
+//                self.appInvoke.upiCollectPollingCompletion = { (status, model) in
+//                    print(status)
+//                    let alert = UIAlertController(title: "", message: "transaction " + "\(status)", preferredStyle: .alert)
+//                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+//
+//                    switch status {
+//                    case .failure: break
+//                    case .success: break
+//                    default: break
+//                    }
+//                }
+//
+//                // else
+//                //MARK: here response of process transaction api is provided. If merchant want to call polling api on its own
+//                //!self.appInvoke.UpiCollectConfigurations.autoPolling  {
+//                ////self.appInvoke.
+//                //}
+//                //print(responseDict)
+//            })
+//    }
     
     
     

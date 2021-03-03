@@ -15,6 +15,8 @@ class AllPayModesViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        // self.appInvoke.mid = "AliSub58582630351896"
+        // self.appInvoke.orderId = "OrderTest" + "\(arc4random())"
     }
     
     @IBAction func tappedOnToken(_ sender: UIButton) {
