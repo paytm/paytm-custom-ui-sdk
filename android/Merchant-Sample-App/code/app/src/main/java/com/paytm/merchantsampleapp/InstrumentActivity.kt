@@ -3,22 +3,28 @@ package com.paytm.merchantsampleapp
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.content.res.Configuration
+import android.graphics.Color
+import android.graphics.Typeface
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextUtils
 import android.text.TextWatcher
 import android.util.Log
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
-import com.paytm.merchantsampleapp.model.BinDetail
-import com.paytm.merchantsampleapp.model.VpaAccountDetail
-import com.paytm.merchantsampleapp.model.VpaBankAccountDetail
 import com.android.volley.VolleyError
 import com.google.gson.Gson
+import com.paytm.merchantsampleapp.model.BinDetail
+import com.paytm.merchantsampleapp.model.PaymentModes
+import com.paytm.merchantsampleapp.model.VpaAccountDetail
+import com.paytm.merchantsampleapp.model.VpaBankAccountDetail
 import kotlinx.android.synthetic.main.activity_instruments.*
 import kotlinx.android.synthetic.main.instrument_card.*
 import kotlinx.android.synthetic.main.instrument_nb.*
@@ -28,6 +34,7 @@ import net.one97.paytm.nativesdk.PaytmSDK
 import net.one97.paytm.nativesdk.Utils.PayMethodType
 import net.one97.paytm.nativesdk.Utils.Server
 import net.one97.paytm.nativesdk.app.PaytmSDKCallbackListener
+import net.one97.paytm.nativesdk.common.widget.PaytmConsentCheckBox
 import net.one97.paytm.nativesdk.dataSource.PaymentsDataImpl
 import net.one97.paytm.nativesdk.dataSource.models.*
 import net.one97.paytm.nativesdk.instruments.upicollect.models.UpiOptionsModel
@@ -49,6 +56,8 @@ class InstrumentActivity : AppCompatActivity(), View.OnClickListener, PaytmSDKCa
     private var channelCode: String? = null
     private lateinit var paymentMode: String
     private val cardTypes = arrayOf("Credit Card", "Debit Card")
+
+    private lateinit var amount: String
 
     private var upiAppListAdapter: UpiAppListAdapter? = null
     private var upiAppsInstalled: ArrayList<UpiOptionsModel>? = null
@@ -117,7 +126,7 @@ class InstrumentActivity : AppCompatActivity(), View.OnClickListener, PaytmSDKCa
     private fun initPaytmSDK() {
         mid = intent.getStringExtra("mid") ?: ""
         val orderId = intent.getStringExtra("orderId")
-        val amount = intent.getStringExtra("amount") ?: "0"
+        amount = intent.getStringExtra("amount") ?: "0"
         txnToken = intent.getStringExtra("txnToken") ?: ""
         val isStaging = intent.getBooleanExtra("isStaging",false)
 
@@ -155,6 +164,15 @@ class InstrumentActivity : AppCompatActivity(), View.OnClickListener, PaytmSDKCa
         action_emi_details.setOnClickListener(this)
         saved_nb.setOnClickListener(this)
         saved_vpa_upi_collect.setOnClickListener(this)
+
+        add_money_wallet.setOnClickListener(this)
+
+        tv_customizeCheckbox.setOnClickListener {
+            val intent = Intent(this, CheckboxCustomisation::class.java)
+            startActivityForResult(intent, 1234)
+        }
+
+        fetch_authcode.setOnClickListener { fetchAuthCode() }
 
         card_expiry.addTextChangedListener(cardExpiryTextWatcher)
         card_expiry.setRawInputType(Configuration.KEYBOARD_QWERTY)
@@ -205,7 +223,6 @@ class InstrumentActivity : AppCompatActivity(), View.OnClickListener, PaytmSDKCa
             if (upiAppsInstalled != null) {
                 upiAppListAdapter =
                     UpiAppListAdapter(upiAppsInstalled,
-                        // It calls startActivityForResult with request code 187 - REQUEST_CODE_UPI_APP
                         UpiAppListAdapter.OnClickUpiApp { upiOptionsModel, _ ->
                             val upiIntentDataRequestModel = UpiIntentRequestModel(
                                 "NONE",
@@ -260,7 +277,7 @@ class InstrumentActivity : AppCompatActivity(), View.OnClickListener, PaytmSDKCa
                 val vpaDetailString = Gson().toJson(vpaBankDetail!!)
 
                 val upiDataRequestModel =
-                    UpiDataRequestModel(vpaDetail?.name!!, vpaDetailString!!, 101)
+                    UpiDataRequestModel(vpaDetail?.name!!, vpaDetailString!!)
                 paytmSDK?.setUpiMpin(this, upiDataRequestModel)
             }
             R.id.tvBalance -> {
@@ -272,10 +289,10 @@ class InstrumentActivity : AppCompatActivity(), View.OnClickListener, PaytmSDKCa
                 val vpaDetailString = Gson().toJson(vpaBankDetail)
 
                 val upiDataRequestModel =
-                    UpiDataRequestModel(vpaDetail?.name!!, vpaDetailString!!, 102)
+                    UpiDataRequestModel(vpaDetail?.name!!, vpaDetailString!!)
                 paytmSDK?.fetchUpiBalance(this, upiDataRequestModel)
             }
-            R.id.proceed_card, R.id.proceed_saved_card, R.id.proceed_wallet, R.id.proceed_nb, R.id.proceed_upi -> {
+            R.id.proceed_card, R.id.proceed_saved_card, R.id.proceed_nb, R.id.proceed_upi -> {
                 startTransaction(v.id)
             }
             R.id.action_emi_details -> {
@@ -299,13 +316,61 @@ class InstrumentActivity : AppCompatActivity(), View.OnClickListener, PaytmSDKCa
                 }
                 showToast(vpa)
             }
+            R.id.proceed_wallet -> {
+                goForWalletTransaction()
+            }
+            R.id.add_money_wallet -> {
+                paytmSDK?.openPaytmAppForAddMoneyToWallet(this)
+            }
         }
     }
+
+    private fun goForWalletTransaction() {
+        if(checkIfWalletBalanceSufficient(amount)) {
+            val paymentRequestModel =
+                WalletRequestModel(AppRepo.cjPayMethodResponse?.body?.paymentFlow!!)
+
+            paytmSDK?.startTransaction(this, paymentRequestModel)
+        }else{
+            wallet_insuff_ll.visibility = View.VISIBLE
+        }
+    }
+
+    private fun checkIfWalletBalanceSufficient(amount: String): Boolean {
+        val walletAmt = getWalletBalance()
+        val amt = amount.toFloat()
+        return walletAmt >= amt
+    }
+
+    fun getWalletBalance(): Float {
+        val merchantPayMethodList = AppRepo.cjPayMethodResponse?.body?.merchantPayOption
+
+        if (merchantPayMethodList == null) {
+            return 0f
+        } else {
+            val paymentModes = merchantPayMethodList.paymentModes
+            if (paymentModes != null) {
+                val itr = paymentModes.iterator()
+
+                while (itr.hasNext()) {
+                    val m = itr.next() as PaymentModes
+                    if (m.paymentMode == "BALANCE" && !(m.payChannelOptions == null || m.payChannelOptions.size == 0)) {
+                        val option = m.payChannelOptions[0]
+                        if (option.balanceInfo != null && option.balanceInfo.accountBalance != null) {
+                            return option.balanceInfo.accountBalance.value.toFloat()
+                        }
+                    }
+                }
+            }
+            return 0f
+        }
+    }
+
 
     // when paytm app is available this checks if there is any saved instruments
     private fun fetchIfSavedInstruments() {
         val hasSavedInstrument = PaytmSDK.getPaymentsUtilRepository()
-            .userHasSavedInstruments(this, mid)
+            .userHasSavedInstruments(this, mid, true, true, true)
         showToast("Has instruments : $hasSavedInstrument")
     }
 
@@ -349,8 +414,7 @@ class InstrumentActivity : AppCompatActivity(), View.OnClickListener, PaytmSDKCa
                     paymentFlow = paymentFlow,
                     upiId = vpaDetail.name!!,
                     bankAccountJson = bankAccountString,
-                    merchantDetailsJson = merchantDetailsString,
-                    requestCode = 100
+                    merchantDetailsJson = merchantDetailsString
                 )
 
             paytmSDK?.startTransaction(this, upiPushRequestModel)
@@ -476,10 +540,6 @@ class InstrumentActivity : AppCompatActivity(), View.OnClickListener, PaytmSDKCa
             R.id.proceed_saved_card -> {
                 paymentRequestModel = goForSavedCardTransaction()
             }
-            R.id.proceed_wallet -> {
-                paymentRequestModel =
-                    WalletRequestModel(AppRepo.cjPayMethodResponse?.body?.paymentFlow!!)
-            }
 
             R.id.proceed_nb -> {
                 val nbCode = edt_nb.text?.toString()
@@ -575,30 +635,73 @@ class InstrumentActivity : AppCompatActivity(), View.OnClickListener, PaytmSDKCa
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         dismissDialog()
-        if (requestCode == 100 && data != null) {
-            showToast(
-                "${data.getStringExtra("nativeSdkForMerchantMessage")} ${data.getStringExtra("response")}"
-            )
-            finish()
-        } else if (requestCode == 101 && data != null) {
-            showToast(
-                data.getStringExtra("response") ?: ""
-            )
-        } else if (requestCode == 102 && data != null) {
-            showToast(
-                data.getStringExtra("response") ?: ""
-            )
-        } else if (requestCode == 187) {  //SDKConstants.REQUEST_CODE_UPI_APP
-            var status: String? = ""
-            if (data != null && data.extras != null) {
-                status = data.getStringExtra("Status")
-            }
+         if (requestCode == 1234 && data != null) {
+            customizePaytmConsentCheckbox(data)
+        }
+    }
 
-            if (!TextUtils.isEmpty(status) && status.equals("FAILURE", ignoreCase = true)) {
-                showToast("Transaction failed")
-            } else {
-                PaytmSDK.getPaymentsHelper().makeUPITransactionStatusRequest(this, "NONE")
+    /*
+     * fetching authcode from paytm app if installed
+     * if auth code is fetched pass it to your server while create transaction token to access all
+     * methods else you can't use wallet, UPI push and saved cards methods
+     */
+    private fun fetchAuthCode() {
+        val paymentsUtilRepository = PaytmSDK.getPaymentsUtilRepository()
+        if (paymentsUtilRepository.isPaytmAppInstalled(this)) {
+            if (edt_client_id.text.toString().isEmpty()) {
+                Toast.makeText(this, "Enter Client id", Toast.LENGTH_LONG).show()
+                return
             }
+            val code: String? = paymentsUtilRepository.fetchAuthCode(
+                this,
+                edt_client_id.text.toString(),
+                mid
+            )
+            Toast.makeText(this, "authCode = $code", Toast.LENGTH_LONG).show()
+            //if auth code is fetched then pass it to your server while create transaction token to access all methods
+        } else {
+            Toast.makeText(this, "App not installed", Toast.LENGTH_LONG).show()
+            //you can't use wallet, UPI push and saved cards methods but you can generate transaction token without it
+        }
+        // after receiving token call startTransaction
+    }
+
+    // checkbox customization using method
+    private fun customizePaytmConsentCheckbox(intent: Intent) {
+        val consentCheckbox: PaytmConsentCheckBox = findViewById(R.id.consentCheckbox)
+        val textColor = intent.getIntExtra("text_color", -1)
+        val textSize = intent.getFloatExtra("text_size", 0.0f)
+        val bgColor = intent.getIntExtra("bg_color", -1)
+        val c_color = intent.getIntExtra("checked_color", Color.rgb(0, 186, 242))
+        val uc_color = intent.getIntExtra("unchecked_color", Color.GRAY)
+        val t_font = intent.getIntExtra("font", -1)
+        if (textColor != -1) {
+            consentCheckbox.setTextColor(textColor)
+        } else {
+            consentCheckbox.setTextColor(Color.BLACK)
+        }
+        if (textSize != 0.0f) {
+            consentCheckbox.textSize = textSize
+        } else {
+            consentCheckbox.setTextSize(
+                TypedValue.COMPLEX_UNIT_PX,
+                resources.getDimension(R.dimen.dimen_14sp)
+            )
+        }
+        if (bgColor != -1) {
+            consentCheckbox.setBackgroundColor(bgColor)
+        } else {
+            consentCheckbox.setBackgroundColor(Color.WHITE)
+        }
+        val myColorStateList = ColorStateList(arrayOf(intArrayOf(android.R.attr.state_checked), intArrayOf(-android.R.attr.state_checked)), intArrayOf(c_color, uc_color))
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            consentCheckbox.buttonTintList=myColorStateList
+        }
+        when (t_font) {
+            1 -> consentCheckbox.typeface = Typeface.MONOSPACE
+            2 -> consentCheckbox.typeface = Typeface.SANS_SERIF
+            3 -> consentCheckbox.typeface = Typeface.SERIF
+            -1 -> consentCheckbox.typeface = Typeface.DEFAULT
         }
     }
 
@@ -692,10 +795,11 @@ class InstrumentActivity : AppCompatActivity(), View.OnClickListener, PaytmSDKCa
         }
     }
 
-    //while closing activity it is necessary to clear paytmSDK instance
+    //while closing activity it is necessary to clear paytmSDK instance.
+    //If clearPaytmSDKData is called, it is necessary to recreate PaytmConsentCheckBox view
     override fun onDestroy() {
         super.onDestroy()
-        paytmSDK?.clear()
+        PaytmSDK.clearPaytmSDKData()
     }
 
     protected fun showDialog() {

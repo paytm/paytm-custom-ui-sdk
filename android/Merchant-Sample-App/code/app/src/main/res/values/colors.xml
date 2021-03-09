@@ -8,4 +8,11 @@
     <color name="white">#ffffff</color>
     <color name="gray">#bbbbbb</color>
 
+    <color name="bright_sky_blue">#00b9f5</color>
+    <color name="error_color">#ff0000</color>
+    <color name="active_state_submit_button">#002E6E</color>
+    <color name="yellow">#FFFF00</color>
+    <color name="green">#00FF00</color>
+    <color name="purple">#9479ee</color>
+    <color name="grey">#9b9b9b</color>
 </resources>

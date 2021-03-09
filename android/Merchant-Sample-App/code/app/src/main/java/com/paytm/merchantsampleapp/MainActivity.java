@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -19,7 +18,6 @@ import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.paytm.merchantsampleapp.R;
 import com.paytm.merchantsampleapp.model.CJPayMethodResponse;
 
 import net.one97.paytm.nativesdk.Gtm.NativeSdkGtmLoader;
@@ -29,7 +27,6 @@ import net.one97.paytm.nativesdk.PaytmSDK;
 import net.one97.paytm.nativesdk.Utils.Server;
 import net.one97.paytm.nativesdk.app.PaytmSDKCallbackListener;
 import net.one97.paytm.nativesdk.common.Constants.SDKConstants;
-import net.one97.paytm.nativesdk.dataSource.PaytmPaymentsUtilRepository;
 import net.one97.paytm.nativesdk.transcation.model.TransactionInfo;
 
 import org.json.JSONArray;
@@ -45,9 +42,8 @@ public class MainActivity extends Activity implements PaytmSDKCallbackListener {
      * Please read readme file before starting
      */
 
-    EditText edtTxn, edtOrderid, edtMid, edtAmount, clientId;
+    EditText edtTxn, edtOrderid, edtMid, edtAmount;
     private CheckBox cbStaging;
-    private PaytmPaymentsUtilRepository paymentsUtilRepository;
 
 
     @Override
@@ -59,7 +55,6 @@ public class MainActivity extends Activity implements PaytmSDKCallbackListener {
         edtOrderid = findViewById(R.id.edt_orderid);
         edtAmount = findViewById(R.id.edt_amount);
         cbStaging = findViewById(R.id.cb_staging);
-        clientId = findViewById(R.id.edt_client_id);
 
         checkAndRequestSmsPermission();
         findViewById(R.id.startTransaction).setOnClickListener(new View.OnClickListener() {
@@ -68,14 +63,6 @@ public class MainActivity extends Activity implements PaytmSDKCallbackListener {
                 startTransaction();
             }
         });
-
-        findViewById(R.id.fetch_authcode).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                fetchAuthCode();
-            }
-        });
-        paymentsUtilRepository = PaytmSDK.getPaymentsUtilRepository();
     }
 
     private void checkAndRequestSmsPermission() {
@@ -90,26 +77,6 @@ public class MainActivity extends Activity implements PaytmSDKCallbackListener {
         super.onResume();
     }
 
-    /*
-     * fetching authcode from paytm app if installed
-     * if auth code is fetched pass it to your server while create transaction token to access all
-     * methods else you can't use wallet, UPI push and saved cards methods
-     */
-    private void fetchAuthCode() {
-        if (paymentsUtilRepository.isPaytmAppInstalled(this)) {
-            if(clientId.getText().toString().isEmpty()){
-                Toast.makeText(this,"Enter Client id",Toast.LENGTH_LONG).show();
-                return;
-            }
-            String code = paymentsUtilRepository.fetchAuthCode(this, clientId.getText().toString());
-
-            Toast.makeText(this, "authCode = " + code, Toast.LENGTH_LONG).show();
-            //if auth code is fetched then pass it to your server while create transaction token to access all methods
-        } else {
-            //you can't use wallet, UPI push and saved cards methods but you can generate transaction token without it
-        }
-        // after receiving token call startTransaction
-    }
 
     /* already got transaction token from backend
      * now fetch pay options
@@ -162,7 +129,7 @@ public class MainActivity extends Activity implements PaytmSDKCallbackListener {
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-
+                Toast.makeText(MainActivity.this,error.getMessage(),Toast.LENGTH_LONG).show();
             }
         }, CJPayMethodResponse.class);
         executeRequest(request);

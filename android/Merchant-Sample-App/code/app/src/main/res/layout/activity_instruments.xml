@@ -37,12 +37,13 @@
             </LinearLayout>
 
         </androidx.cardview.widget.CardView>
+
         <androidx.cardview.widget.CardView
             android:id="@+id/fetch_saved_instrument"
             style="@style/cardStyle"
-            android:visibility="gone"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:visibility="gone">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -95,13 +96,12 @@
         </androidx.cardview.widget.CardView>
 
 
-
         <androidx.cardview.widget.CardView
             android:id="@+id/web_redirect"
             style="@style/cardStyle"
-            android:visibility="gone"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:visibility="gone">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -119,6 +119,67 @@
                     android:paddingTop="@dimen/dimen_16dp"
                     android:paddingBottom="@dimen/dimen_16dp"
                     android:text="Redirect to Webview"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/fetch_authcode"
+            style="@style/cardStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/dimen_16dp">
+
+                <!-- This required to be check to fetch auth code-->
+                <net.one97.paytm.nativesdk.common.widget.PaytmConsentCheckBox
+                    android:id="@+id/consentCheckbox"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Allow merchant app to fetch" />
+<!--                app:consentButton="@drawable/customised_checkbox"-->
+<!--                app:consentCheckboxColorStateList="@drawable/consent_colorstatelist"-->
+<!--                app:consentTextAppearance="@style/ConsentTextAppearance"-->
+<!--                app:consentBackgroundColor="@color/gray"-->
+
+
+                <TextView
+                    android:id="@+id/tv_customizeCheckbox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/dimen_8dp"
+                    android:background="@color/paytm_blue"
+                    android:gravity="center"
+                    android:paddingTop="@dimen/dimen_16dp"
+                    android:paddingBottom="@dimen/dimen_16dp"
+                    android:text="Customize the above checkbox"
+                    android:textStyle="bold" />
+
+                <EditText
+                    android:id="@+id/edt_client_id"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/dimen_8dp"
+                    android:ems="10"
+                    android:hint="Enter Client Id"
+                    android:text="" />
+
+                <TextView
+                    android:id="@+id/tvFetchAuthCode"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/dimen_8dp"
+                    android:background="@color/paytm_blue"
+                    android:gravity="center"
+                    android:paddingTop="@dimen/dimen_16dp"
+                    android:paddingBottom="@dimen/dimen_16dp"
+                    android:text="Fetch AuthCode"
                     android:textStyle="bold" />
 
             </LinearLayout>
@@ -150,6 +211,29 @@
                     android:background="@color/paytm_blue"
                     android:text="@string/proceed" />
 
+                <LinearLayout
+                    android:id="@+id/wallet_insuff_ll"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:padding="16dp"
+                        android:text="Wallet balance is insufficient to pay"
+                        android:textColor="@android:color/holo_red_dark" />
+
+                    <Button
+                        android:id="@+id/add_money_wallet"
+                        style="@style/textViewLight"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@color/paytm_blue"
+                        android:text="Add money to Wallet" />
+
+                </LinearLayout>
             </LinearLayout>
 
         </androidx.cardview.widget.CardView>

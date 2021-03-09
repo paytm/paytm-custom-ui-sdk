@@ -62,56 +62,6 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/edt_orderid" />
 
-        <EditText
-            android:id="@+id/edt_client_id"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="16dp"
-            android:ems="10"
-            android:hint="Enter Client Id"
-            android:text=""
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/edt_amount" />
-
-        <androidx.cardview.widget.CardView
-            android:id="@+id/fetch_authcode"
-            style="@style/cardStyle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/edt_client_id">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="@dimen/dimen_16dp">
-
-                <!-- This required to be check to fetch auth code-->
-                <net.one97.paytm.nativesdk.common.widget.PaytmConsentCheckBox
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Allow merchant app to fetch" />
-
-                <TextView
-                    android:id="@+id/tvFetchAuthCode"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/dimen_8dp"
-                    android:background="@color/paytm_blue"
-                    android:gravity="center"
-                    android:paddingTop="@dimen/dimen_16dp"
-                    android:paddingBottom="@dimen/dimen_16dp"
-                    android:text="Fetch AuthCode"
-                    android:textStyle="bold" />
-
-            </LinearLayout>
-
-        </androidx.cardview.widget.CardView>
 
         <EditText
             android:id="@+id/edt_txnToken"
@@ -126,7 +76,7 @@
             android:text=""
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/fetch_authcode" />
+            app:layout_constraintTop_toBottomOf="@+id/edt_amount" />
 
         <CheckBox
             android:id="@+id/cb_staging"

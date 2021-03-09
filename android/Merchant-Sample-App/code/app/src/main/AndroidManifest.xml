@@ -28,6 +28,7 @@
             </intent-filter>
         </activity>
         <activity android:name="com.paytm.merchantsampleapp.InstrumentActivity" />
+        <activity android:name=".CheckboxCustomisation" />
     </application>
 
 </manifest>
