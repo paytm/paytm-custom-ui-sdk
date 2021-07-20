@@ -1,9 +1,12 @@
 // swift-interface-format-version: 1.0
 // swift-compiler-version: Apple Swift version 5.3.2 (swiftlang-1200.0.45 clang-1200.0.32.28)
-// swift-module-flags: -target armv7-apple-ios10.0 -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -module-name PaytmNativeSDK
+// swift-module-flags: -target armv7-apple-ios10.0 -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -Onone -module-name PaytmNativeSDK
+import SystemConfiguration.CaptiveNetwork
+import CoreLocation
 import Foundation
 @_exported import PaytmNativeSDK
 import Swift
+import SystemConfiguration
 import UIKit
 import WebKit
 public enum AINativeTokenFlowStatus {
@@ -33,8 +36,9 @@ public struct UpiCollectConfigurations {
 }
 public typealias MerchantPaymentCompletionBlock = (PaytmNativeSDK.AINativeTokenFlowStatus) -> Swift.Void
 public typealias UPICollectCompletionCallBack = (PaytmNativeSDK.OrderStatus, PaytmNativeSDK.AINativeBaseParameterModel) -> Swift.Void
-@objc @_inheritsConvenienceInitializers public class AIHandler : ObjectiveC.NSObject, UIKit.UIAdaptivePresentationControllerDelegate {
-  public var environment: PaytmNativeSDK.AIEnvironment
+public typealias ValidateVPA = (([Swift.String : Any]?, Swift.String?) -> Swift.Void)?
+public typealias UPIIntentCallBack = ([Swift.String : Any]?, Swift.String?) -> Swift.Void
+@objc @_inheritsConvenienceInitializers public class AIHandler : ObjectiveC.NSObject {
   public var mid: Swift.String
   public var orderId: Swift.String
   public var upiCollectPollingCompletion: PaytmNativeSDK.UPICollectCompletionCallBack?
@@ -57,6 +61,9 @@ extension AIHandler {
   public func returnCardType(selectedPayModel: Swift.AnyObject) -> Swift.String
   public func openPaytm(selectedPayModel: PaytmNativeSDK.AINativeInhouseParameterModel, merchantId: Swift.String, orderId: Swift.String, txnToken: Swift.String, amount: Swift.String, callbackUrl: Swift.String?, delegate: PaytmNativeSDK.AIDelegate, environment: PaytmNativeSDK.AIEnvironment)
   public func callProcessTransactionAPIForUPI(selectedPayModel: PaytmNativeSDK.AINativeNUPIarameterModel, upiPollingConfig: PaytmNativeSDK.UpiCollectConfigurations, delegate: PaytmNativeSDK.AIDelegate, completionForPush: PaytmNativeSDK.MerchantPaymentCompletionBlock?, completionForCollect: (([Swift.String : Any]) -> Swift.Void)?)
+  public func callProcessTransactionAPIForUPIIntent(orderId: Swift.String, mid: Swift.String, txnToken: Swift.String, pspApp: PaytmNativeSDK.PspApp, completionHandler: PaytmNativeSDK.UPIIntentCallBack?)
+  public func getURLForUPIIntent(orderId: Swift.String, mid: Swift.String) -> Swift.String
+  public func getParametersForUPIIntent(orderId: Swift.String, mid: Swift.String, txnToken: Swift.String, pspApp: PaytmNativeSDK.PspApp) -> [Swift.String : Any]
   public func applyOffer()
   public func fetchAllOffers(mid: Swift.String, delegate: PaytmNativeSDK.AIDelegate)
   public func getInstrumentFromLocalVault(custId: Swift.String, mid: Swift.String, ssoToken: Swift.String = "", checksum: Swift.String, delegate: PaytmNativeSDK.AIDelegate)
@@ -76,6 +83,7 @@ extension AIHandler {
 }
 extension AIHandler {
   public func pollingForStatus(selectedPayMode: PaytmNativeSDK.AINativeBaseParameterModel)
+  public func isVpaValidated(vpa: Swift.String, mid: Swift.String, tokenType: PaytmNativeSDK.TokenType, token: Swift.String, referenceId: Swift.String, completionHandler: PaytmNativeSDK.ValidateVPA)
 }
 extension AIHandler : PaytmNativeSDK.AIDelegate {
   @objc dynamic public func didFinish(with success: Swift.Bool, response: [Swift.String : Any], error: Swift.String?, withUserCancellation hasUserCancelledTransaction: Swift.Bool)
@@ -234,72 +242,48 @@ public enum TokenType : Swift.String {
     get
   }
 }
+public enum PspApp : Swift.String {
+  case paytm
+  case gPay
+  case phonePe
+  public typealias RawValue = Swift.String
+  public init?(rawValue: Swift.String)
+  public var rawValue: Swift.String {
+    get
+  }
+}
 @_hasMissingDesignatedInitializers public class AINativeBaseParameterModel {
   @objc deinit
 }
 @_hasMissingDesignatedInitializers public class AINativeInhouseParameterModel : PaytmNativeSDK.AINativeBaseParameterModel {
-  public init(withTransactionToken txnToken: Swift.String, orderId: Swift.String, shouldOpenNativePlusFlow: Swift.Bool, mid: Swift.String, flowType: PaytmNativeSDK.AINativePaymentFlow, paymentModes: PaytmNativeSDK.AINativePaymentModes, redirectionUrl: Swift.String = "", callbackUrl: Swift.String = "")
+  public init(withTransactionToken txnToken: Swift.String, orderId: Swift.String, shouldOpenNativePlusFlow: Swift.Bool, mid: Swift.String, flowType: PaytmNativeSDK.AINativePaymentFlow, paymentModes: PaytmNativeSDK.AINativePaymentModes, redirectionUrl: Swift.String = "https://securegw.paytm.in/theia/paytmCallback")
   @objc deinit
 }
 @_hasMissingDesignatedInitializers public class AINativeSavedCardParameterModel : PaytmNativeSDK.AINativeBaseParameterModel {
-  public init(withTransactionToken txnToken: Swift.String, tokenType: PaytmNativeSDK.TokenType = .txntoken, orderId: Swift.String, shouldOpenNativePlusFlow: Swift.Bool, mid: Swift.String, flowType: PaytmNativeSDK.AINativePaymentFlow, paymentModes: PaytmNativeSDK.AINativePaymentModes, authMode: PaytmNativeSDK.AuthMode, cardId: Swift.String?, cardNumber: Swift.String?, cvv: Swift.String?, expiryDate: Swift.String?, newCard isNewCard: Swift.Bool, saveInstrument: Swift.String, redirectionUrl: Swift.String = "https://securegw.paytm.in/theia/paytmCallback", reference_Id: Swift.String = "", callbackUrl: Swift.String = "")
+  public init(withTransactionToken txnToken: Swift.String, tokenType: PaytmNativeSDK.TokenType = .txntoken, orderId: Swift.String, shouldOpenNativePlusFlow: Swift.Bool, mid: Swift.String, flowType: PaytmNativeSDK.AINativePaymentFlow, paymentModes: PaytmNativeSDK.AINativePaymentModes, authMode: PaytmNativeSDK.AuthMode, cardId: Swift.String?, cardNumber: Swift.String?, cvv: Swift.String?, expiryDate: Swift.String?, newCard isNewCard: Swift.Bool, saveInstrument: Swift.String, redirectionUrl: Swift.String = "https://securegw.paytm.in/theia/paytmCallback", reference_Id: Swift.String = "")
   @objc deinit
 }
 @_hasMissingDesignatedInitializers public class AINativeNBParameterModel : PaytmNativeSDK.AINativeBaseParameterModel {
-  public init(withTransactionToken txnToken: Swift.String, tokenType: PaytmNativeSDK.TokenType = .txntoken, orderId: Swift.String, shouldOpenNativePlusFlow: Swift.Bool, mid: Swift.String, flowType: PaytmNativeSDK.AINativePaymentFlow, paymentModes: PaytmNativeSDK.AINativePaymentModes, channelCode: Swift.String, redirectionUrl: Swift.String = "https://securegw.paytm.in/theia/paytmCallback", reference_Id: Swift.String = "", callbackUrl: Swift.String = "")
+  public init(withTransactionToken txnToken: Swift.String, tokenType: PaytmNativeSDK.TokenType = .txntoken, orderId: Swift.String, shouldOpenNativePlusFlow: Swift.Bool, mid: Swift.String, flowType: PaytmNativeSDK.AINativePaymentFlow, paymentModes: PaytmNativeSDK.AINativePaymentModes, channelCode: Swift.String, redirectionUrl: Swift.String = "https://securegw.paytm.in/theia/paytmCallback", reference_Id: Swift.String = "")
   @objc deinit
 }
 @_hasMissingDesignatedInitializers public class AINativeNUPIarameterModel : PaytmNativeSDK.AINativeBaseParameterModel {
-  public init(withTransactionToken txnToken: Swift.String, orderId: Swift.String, shouldOpenNativePlusFlow: Swift.Bool, mid: Swift.String, flowType: PaytmNativeSDK.AINativePaymentFlow, amount: CoreGraphics.CGFloat, paymentModes: PaytmNativeSDK.AINativePaymentModes, vpaAddress: Swift.String, upiFlowType: PaytmNativeSDK.AINativeUPIFlow, merchantInfo: [Swift.String : Any]?, bankDetail: [Swift.String : Any]?, redirectionUrl: Swift.String = "https://securegw.paytm.in/theia/paytmCallback", callbackUrl: Swift.String = "")
+  public init(withTransactionToken txnToken: Swift.String, orderId: Swift.String, shouldOpenNativePlusFlow: Swift.Bool, mid: Swift.String, flowType: PaytmNativeSDK.AINativePaymentFlow, amount: CoreGraphics.CGFloat, paymentModes: PaytmNativeSDK.AINativePaymentModes, vpaAddress: Swift.String, upiFlowType: PaytmNativeSDK.AINativeUPIFlow, merchantInfo: [Swift.String : Any]?, bankDetail: [Swift.String : Any]?, redirectionUrl: Swift.String = "https://securegw.paytm.in/theia/paytmCallback")
   @objc deinit
 }
 @_hasMissingDesignatedInitializers public class AINativeConsentManager {
-  public static let shared: PaytmNativeSDK.AINativeConsentManager
+  public static var shared: PaytmNativeSDK.AINativeConsentManager
   public func getConsentState() -> Swift.Bool
   @objc deinit
 }
-public let PRODUCTION_PG_DOMAIN: Swift.String
-public let STAGING_PG_DOMAIN: Swift.String
+public var PRODUCTION_PG_DOMAIN: Swift.String
+public var STAGING_PG_DOMAIN: Swift.String
 public var kStaging_ServerURL: Swift.String
 public var kProduction_ServerURL: Swift.String
 public var kStaging_PGServerURL: Swift.String
 public var kProduction_PGServerURL: Swift.String
-@objc(AIPaymentStatus) public enum AIPaymentStatus : Swift.Int {
-  case success
-  case failed
-  case pending
-  case cancel
-  public typealias RawValue = Swift.Int
-  public init?(rawValue: Swift.Int)
-  public var rawValue: Swift.Int {
+extension UIDevice {
+  public var modelName: Swift.String {
     get
   }
 }
-extension PaytmNativeSDK.AINativeTokenFlowStatus : Swift.Equatable {}
-extension PaytmNativeSDK.AINativeTokenFlowStatus : Swift.Hashable {}
-extension PaytmNativeSDK.OrderStatus : Swift.Equatable {}
-extension PaytmNativeSDK.OrderStatus : Swift.Hashable {}
-extension PaytmNativeSDK.AlertViewType : Swift.Equatable {}
-extension PaytmNativeSDK.AlertViewType : Swift.Hashable {}
-extension PaytmNativeSDK.AlertViewType : Swift.RawRepresentable {}
-extension PaytmNativeSDK.AIEnvironment : Swift.Equatable {}
-extension PaytmNativeSDK.AIEnvironment : Swift.Hashable {}
-extension PaytmNativeSDK.AIEnvironment : Swift.RawRepresentable {}
-extension PaytmNativeSDK.AINativePaymentFlow : Swift.Equatable {}
-extension PaytmNativeSDK.AINativePaymentFlow : Swift.Hashable {}
-extension PaytmNativeSDK.AINativePaymentFlow : Swift.RawRepresentable {}
-extension PaytmNativeSDK.AINativePaymentModes : Swift.Equatable {}
-extension PaytmNativeSDK.AINativePaymentModes : Swift.Hashable {}
-extension PaytmNativeSDK.AINativePaymentModes : Swift.RawRepresentable {}
-extension PaytmNativeSDK.AuthMode : Swift.Equatable {}
-extension PaytmNativeSDK.AuthMode : Swift.Hashable {}
-extension PaytmNativeSDK.AuthMode : Swift.RawRepresentable {}
-extension PaytmNativeSDK.AINativeUPIFlow : Swift.Equatable {}
-extension PaytmNativeSDK.AINativeUPIFlow : Swift.Hashable {}
-extension PaytmNativeSDK.AINativeUPIFlow : Swift.RawRepresentable {}
-extension PaytmNativeSDK.TokenType : Swift.Equatable {}
-extension PaytmNativeSDK.TokenType : Swift.Hashable {}
-extension PaytmNativeSDK.TokenType : Swift.RawRepresentable {}
-extension PaytmNativeSDK.AIPaymentStatus : Swift.Equatable {}
-extension PaytmNativeSDK.AIPaymentStatus : Swift.Hashable {}
-extension PaytmNativeSDK.AIPaymentStatus : Swift.RawRepresentable {}

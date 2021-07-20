@@ -787,8 +787,8 @@
             filePath = "PaytmNativeSampleApp/WalletViewController.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "54"
-            endingLineNumber = "54"
+            startingLineNumber = "46"
+            endingLineNumber = "46"
             landmarkName = "hitInitiateTransactionAPI(_:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -851,8 +851,8 @@
             filePath = "PaytmNativeSampleApp/BaseViewController.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "96"
-            endingLineNumber = "96"
+            startingLineNumber = "89"
+            endingLineNumber = "89"
             landmarkName = "openPaymentController(_:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -867,8 +867,8 @@
             filePath = "PaytmNativeSampleApp/WalletViewController.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "98"
-            endingLineNumber = "98"
+            startingLineNumber = "86"
+            endingLineNumber = "86"
             landmarkName = "fetchPayOptions(selectedPayModel:env:txnToken:orderId:mid:transactionAmount:callBack:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -997,8 +997,8 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "85"
             endingLineNumber = "85"
-            landmarkName = "AIHandler"
-            landmarkType = "3">
+            landmarkName = "isPaytmAppInstall"
+            landmarkType = "24">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -1031,38 +1031,6 @@
             endingLineNumber = "555"
             landmarkName = "webVC(with:params:header:selectedPayMode:)"
             landmarkType = "7">
-            <Locations>
-               <Location
-                  uuid = "14599D2A-E6F4-401F-BBE4-F732D5CE10BF - ec7440f8e8537382"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "PaytmNativeSDK.AIHandler.(webVC in _312424CF13D29B3B9E942D064A71C8FD)(with: Swift.String, params: Swift.Dictionary&lt;Swift.String, Any&gt;, header: Swift.Optional&lt;Swift.Dictionary&lt;Swift.String, Any&gt;&gt;, selectedPayMode: PaytmNativeSDK.AINativeBaseParameterModel) -&gt; ()"
-                  moduleName = "PaytmNativeSDK"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/nikhilagarwal/customuisdkios/CustomUISDK/PaytmNativeSDK/Model/AIHandler.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "555"
-                  endingLineNumber = "555"
-                  offsetFromSymbolStart = "2240">
-               </Location>
-               <Location
-                  uuid = "14599D2A-E6F4-401F-BBE4-F732D5CE10BF - 66a1789ee17b7ad8"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "closure #1 () -&gt; () in PaytmNativeSDK.AIHandler.(webVC in _312424CF13D29B3B9E942D064A71C8FD)(with: Swift.String, params: Swift.Dictionary&lt;Swift.String, Any&gt;, header: Swift.Optional&lt;Swift.Dictionary&lt;Swift.String, Any&gt;&gt;, selectedPayMode: PaytmNativeSDK.AINativeBaseParameterModel) -&gt; ()"
-                  moduleName = "PaytmNativeSDK"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/nikhilagarwal/customuisdkios/CustomUISDK/PaytmNativeSDK/Model/AIHandler.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "555"
-                  endingLineNumber = "555"
-                  offsetFromSymbolStart = "24">
-               </Location>
-            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -1079,38 +1047,6 @@
             endingLineNumber = "167"
             landmarkName = "webView(_:didFinish:)"
             landmarkType = "7">
-            <Locations>
-               <Location
-                  uuid = "61A09DDA-FFF0-4511-9A4E-C24352AFA28F - fae98d2e5a80f708"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "closure #1 (Swift.Optional&lt;Any&gt;, Swift.Optional&lt;Swift.Error&gt;) -&gt; () in PaytmNativeSDK.AIWebVC.webView(_: __C.WKWebView, didFinish: Swift.Optional&lt;__C.WKNavigation&gt;) -&gt; ()"
-                  moduleName = "PaytmNativeSDK"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/nikhilagarwal/customuisdkios/CustomUISDK/PaytmNativeSDK/Controller/AIWebVC.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "167"
-                  endingLineNumber = "167"
-                  offsetFromSymbolStart = "2228">
-               </Location>
-               <Location
-                  uuid = "61A09DDA-FFF0-4511-9A4E-C24352AFA28F - 28d5dab0e75ae7db"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "closure #3 () -&gt; () in closure #1 (Swift.Optional&lt;Any&gt;, Swift.Optional&lt;Swift.Error&gt;) -&gt; () in PaytmNativeSDK.AIWebVC.webView(_: __C.WKWebView, didFinish: Swift.Optional&lt;__C.WKNavigation&gt;) -&gt; ()"
-                  moduleName = "PaytmNativeSDK"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/nikhilagarwal/customuisdkios/CustomUISDK/PaytmNativeSDK/Controller/AIWebVC.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "154"
-                  endingLineNumber = "154"
-                  offsetFromSymbolStart = "36">
-               </Location>
-            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -1127,6 +1063,38 @@
             endingLineNumber = "153"
             landmarkName = "webView(_:didFinish:)"
             landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "44485E3D-573F-4E50-98C5-601EFE1C836C - 4b471b3cdd6af595"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "PaytmNativeSDK.AIWebVC.webView(_: __C.WKWebView, didFinish: Swift.Optional&lt;__C.WKNavigation&gt;) -&gt; ()"
+                  moduleName = "PaytmNativeSDK"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/nikhilagarwal/customuisdkios/CustomUISDK/PaytmNativeSDK/Controller/AIWebVC.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "153"
+                  endingLineNumber = "153"
+                  offsetFromSymbolStart = "700">
+               </Location>
+               <Location
+                  uuid = "44485E3D-573F-4E50-98C5-601EFE1C836C - fae98d2e5a80f6fe"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #1 (Swift.Optional&lt;Any&gt;, Swift.Optional&lt;Swift.Error&gt;) -&gt; () in PaytmNativeSDK.AIWebVC.webView(_: __C.WKWebView, didFinish: Swift.Optional&lt;__C.WKNavigation&gt;) -&gt; ()"
+                  moduleName = "PaytmNativeSDK"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/nikhilagarwal/customuisdkios/CustomUISDK/PaytmNativeSDK/Controller/AIWebVC.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "153"
+                  endingLineNumber = "153"
+                  offsetFromSymbolStart = "356">
+               </Location>
+            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -1276,8 +1244,24 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
+            uuid = "54F6B020-15F5-41C2-8398-C351EE6D7E3E"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../CustomUISDK/PaytmNativeSDK/Model/AIHandler.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "135"
+            endingLineNumber = "135"
+            landmarkName = "callProcessTransitionAPIForCollect(selectedPayModel:delegate:upiPollingConfig:responseCallback:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
             uuid = "8B1FC51E-9275-47E2-8174-0F6957C61B46"
-            shouldBeEnabled = "No"
+            shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "../CustomUISDK/PaytmNativeSDK/Model/AIHandler.swift"
@@ -1309,7 +1293,7 @@
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
             uuid = "E2A970A3-9695-4AE5-B8EA-7327EC7CB951"
-            shouldBeEnabled = "No"
+            shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "../CustomUISDK/PaytmNativeSDK/Model/AIHandler.swift"
@@ -1321,7 +1305,22 @@
             landmarkType = "7">
             <Locations>
                <Location
-                  uuid = "E2A970A3-9695-4AE5-B8EA-7327EC7CB951 - 6bcce10100743363"
+                  uuid = "E2A970A3-9695-4AE5-B8EA-7327EC7CB951 - e5d5c777b6280ef6"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #1 (PaytmNativeSDK.Result&lt;Swift.Dictionary&lt;Swift.String, Any&gt;&gt;) -&gt; () in PaytmNativeSDK.AIHandler.(processTransation in _312424CF13D29B3B9E942D064A71C8FD)(selectedPayMode: PaytmNativeSDK.AINativeBaseParameterModel, accessToken: Swift.Optional&lt;Swift.String&gt;, callback: Swift.Optional&lt;(Swift.Dictionary&lt;Swift.String, Any&gt;) -&gt; ()&gt;) -&gt; ()"
+                  moduleName = "PaytmNativeSDK"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/nikhilagarwal/customuisdkios/CustomUISDK/PaytmNativeSDK/Model/AIHandler.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "822"
+                  endingLineNumber = "822"
+                  offsetFromSymbolStart = "452">
+               </Location>
+               <Location
+                  uuid = "E2A970A3-9695-4AE5-B8EA-7327EC7CB951 - 6bcce101007433a5"
                   shouldBeEnabled = "Yes"
                   ignoreCount = "0"
                   continueAfterRunningActions = "No"
@@ -1331,96 +1330,17 @@
                   urlString = "file:///Users/nikhilagarwal/customuisdkios/CustomUISDK/PaytmNativeSDK/Model/AIHandler.swift"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "822"
-                  endingLineNumber = "822"
+                  startingLineNumber = "824"
+                  endingLineNumber = "824"
                   offsetFromSymbolStart = "332">
                </Location>
-               <Location
-                  uuid = "E2A970A3-9695-4AE5-B8EA-7327EC7CB951 - 6bcce10100743363"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "closure #1 () -&gt; () in closure #1 (PaytmNativeSDK.Result&lt;Swift.Dictionary&lt;Swift.String, Any&gt;&gt;) -&gt; () in PaytmNativeSDK.AIHandler.(processTransation in _312424CF13D29B3B9E942D064A71C8FD)(selectedPayMode: PaytmNativeSDK.AINativeBaseParameterModel, accessToken: Swift.Optional&lt;Swift.String&gt;, callback: Swift.Optional&lt;(Swift.Dictionary&lt;Swift.String, Any&gt;) -&gt; ()&gt;) -&gt; ()"
-                  moduleName = "PaytmNativeSDK"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/nikhilagarwal/customuisdkios/CustomUISDK/PaytmNativeSDK/Model/AIHandler.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "822"
-                  endingLineNumber = "822"
-                  offsetFromSymbolStart = "360">
-               </Location>
             </Locations>
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "2A25B2AF-861E-4DB4-AE44-5073877C2F7A"
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "PaytmNativeSampleApp/ViewController.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "70"
-            endingLineNumber = "70"
-            landmarkName = "initiateTransitionToken(callback:)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            uuid = "FADDEDF0-7F81-4BD3-B4A2-3D97F65C5ED5"
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "PaytmNativeSampleApp/WalletViewController.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "89"
-            endingLineNumber = "89"
-            landmarkName = "fetchPayOptions(selectedPayModel:env:txnToken:orderId:mid:transactionAmount:callBack:)"
-            landmarkType = "7">
-            <Locations>
-               <Location
-                  uuid = "FADDEDF0-7F81-4BD3-B4A2-3D97F65C5ED5 - 226cd290f165e28e"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "PaytmNativeSampleApp.WalletViewController.fetchPayOptions(selectedPayModel: PaytmNativeSDK.AINativeInhouseParameterModel, env: PaytmNativeSDK.AIEnvironment, txnToken: Swift.String, orderId: Swift.String, mid: Swift.String, transactionAmount: Swift.String, callBack: (Swift.Bool) -&gt; ()) -&gt; ()"
-                  moduleName = "PaytmNativeSampleApp"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/nikhilagarwal/customuisdkios/PaytmNativeSampleApp/PaytmNativeSampleApp/WalletViewController.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "89"
-                  endingLineNumber = "89"
-                  offsetFromSymbolStart = "2412">
-               </Location>
-               <Location
-                  uuid = "FADDEDF0-7F81-4BD3-B4A2-3D97F65C5ED5 - e2aafda44b79a39a"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "closure #1 (Swift.Optional&lt;Foundation.Data&gt;, Swift.Optional&lt;__C.NSURLResponse&gt;, Swift.Optional&lt;Swift.Error&gt;) -&gt; () in PaytmNativeSampleApp.WalletViewController.fetchPayOptions(selectedPayModel: PaytmNativeSDK.AINativeInhouseParameterModel, env: PaytmNativeSDK.AIEnvironment, txnToken: Swift.String, orderId: Swift.String, mid: Swift.String, transactionAmount: Swift.String, callBack: (Swift.Bool) -&gt; ()) -&gt; ()"
-                  moduleName = "PaytmNativeSampleApp"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/nikhilagarwal/customuisdkios/PaytmNativeSampleApp/PaytmNativeSampleApp/WalletViewController.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "89"
-                  endingLineNumber = "89"
-                  offsetFromSymbolStart = "244">
-               </Location>
-            </Locations>
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            uuid = "BB544EA9-5DC2-4EFB-8F38-ADD92825E08D"
+            uuid = "A099F2CB-B305-44EF-91A6-6560E76892B6"
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
@@ -1436,16 +1356,16 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "77F0FCF4-539C-4254-9F3E-EFEC79C3F843"
+            uuid = "2A25B2AF-861E-4DB4-AE44-5073877C2F7A"
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "PaytmNativeSampleApp/BaseViewController.swift"
+            filePath = "PaytmNativeSampleApp/ViewController.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "86"
-            endingLineNumber = "86"
-            landmarkName = "didFinish(with:response:error:withUserCancellation:)"
+            startingLineNumber = "70"
+            endingLineNumber = "70"
+            landmarkName = "initiateTransitionToken(callback:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

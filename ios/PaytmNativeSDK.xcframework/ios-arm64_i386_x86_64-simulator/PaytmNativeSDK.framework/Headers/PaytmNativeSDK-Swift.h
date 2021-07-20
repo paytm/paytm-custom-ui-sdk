@@ -225,7 +225,7 @@ typedef SWIFT_ENUM_NAMED(NSInteger, AIEnvironment, "AIEnvironment", open) {
 
 
 SWIFT_CLASS("_TtC14PaytmNativeSDK9AIHandler")
-@interface AIHandler : NSObject <UIAdaptivePresentationControllerDelegate>
+@interface AIHandler : NSObject
 - (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
 @end
 
@@ -253,13 +253,6 @@ SWIFT_CLASS("_TtC14PaytmNativeSDK19AINativeConsentView")
 @end
 
 
-
-typedef SWIFT_ENUM_NAMED(NSInteger, AIPaymentStatus, "AIPaymentStatus", open) {
-  AIPaymentStatusSuccess = 0,
-  AIPaymentStatusFailed = 1,
-  AIPaymentStatusPending = 2,
-  AIPaymentStatusCancel = 3,
-};
 
 typedef SWIFT_ENUM(NSInteger, AlertViewType, open) {
   AlertViewTypeNone = 0,
@@ -379,6 +372,7 @@ SWIFT_CLASS("_TtC14PaytmNativeSDK19JRPasscodeTextField")
 - (nonnull instancetype)initWithFrame:(CGRect)frame OBJC_DESIGNATED_INITIALIZER;
 - (nullable instancetype)initWithCoder:(NSCoder * _Nonnull)coder OBJC_DESIGNATED_INITIALIZER;
 @end
+
 
 
 
@@ -616,7 +610,7 @@ typedef SWIFT_ENUM_NAMED(NSInteger, AIEnvironment, "AIEnvironment", open) {
 
 
 SWIFT_CLASS("_TtC14PaytmNativeSDK9AIHandler")
-@interface AIHandler : NSObject <UIAdaptivePresentationControllerDelegate>
+@interface AIHandler : NSObject
 - (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
 @end
 
@@ -644,13 +638,6 @@ SWIFT_CLASS("_TtC14PaytmNativeSDK19AINativeConsentView")
 @end
 
 
-
-typedef SWIFT_ENUM_NAMED(NSInteger, AIPaymentStatus, "AIPaymentStatus", open) {
-  AIPaymentStatusSuccess = 0,
-  AIPaymentStatusFailed = 1,
-  AIPaymentStatusPending = 2,
-  AIPaymentStatusCancel = 3,
-};
 
 typedef SWIFT_ENUM(NSInteger, AlertViewType, open) {
   AlertViewTypeNone = 0,
@@ -770,6 +757,7 @@ SWIFT_CLASS("_TtC14PaytmNativeSDK19JRPasscodeTextField")
 - (nonnull instancetype)initWithFrame:(CGRect)frame OBJC_DESIGNATED_INITIALIZER;
 - (nullable instancetype)initWithCoder:(NSCoder * _Nonnull)coder OBJC_DESIGNATED_INITIALIZER;
 @end
+
 
 
 
@@ -1007,7 +995,7 @@ typedef SWIFT_ENUM_NAMED(NSInteger, AIEnvironment, "AIEnvironment", open) {
 
 
 SWIFT_CLASS("_TtC14PaytmNativeSDK9AIHandler")
-@interface AIHandler : NSObject <UIAdaptivePresentationControllerDelegate>
+@interface AIHandler : NSObject
 - (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
 @end
 
@@ -1035,13 +1023,6 @@ SWIFT_CLASS("_TtC14PaytmNativeSDK19AINativeConsentView")
 @end
 
 
-
-typedef SWIFT_ENUM_NAMED(NSInteger, AIPaymentStatus, "AIPaymentStatus", open) {
-  AIPaymentStatusSuccess = 0,
-  AIPaymentStatusFailed = 1,
-  AIPaymentStatusPending = 2,
-  AIPaymentStatusCancel = 3,
-};
 
 typedef SWIFT_ENUM(NSInteger, AlertViewType, open) {
   AlertViewTypeNone = 0,
@@ -1161,6 +1142,7 @@ SWIFT_CLASS("_TtC14PaytmNativeSDK19JRPasscodeTextField")
 - (nonnull instancetype)initWithFrame:(CGRect)frame OBJC_DESIGNATED_INITIALIZER;
 - (nullable instancetype)initWithCoder:(NSCoder * _Nonnull)coder OBJC_DESIGNATED_INITIALIZER;
 @end
+
 
 
 

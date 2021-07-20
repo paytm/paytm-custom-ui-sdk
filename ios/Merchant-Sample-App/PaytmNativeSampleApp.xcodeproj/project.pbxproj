@@ -21,6 +21,7 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		14CE34042685BED800656D61 /* UPIIntentViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14CE34032685BED800656D61 /* UPIIntentViewController.swift */; };
 		170985C523DECD3F0056B0BE /* AllPayModesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 170985C323DECD3F0056B0BE /* AllPayModesViewController.swift */; };
 		172397CD23E2D58E00DFE8F7 /* AuthTokenViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 172397CC23E2D58E00DFE8F7 /* AuthTokenViewController.swift */; };
 		174C206323D2D0D800884228 /* UPIPushViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 174C206223D2D0D800884228 /* UPIPushViewController.swift */; };
@@ -37,6 +38,8 @@
 		179DD11623C4D2FF001BF94F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 179DD11423C4D2FF001BF94F /* LaunchScreen.storyboard */; };
 		179DD12123C4D2FF001BF94F /* PaytmNativeSampleAppTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 179DD12023C4D2FF001BF94F /* PaytmNativeSampleAppTests.swift */; };
 		CBAA348E245963CD00673357 /* BankOfferViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBAA348D245963CD00673357 /* BankOfferViewController.swift */; };
+		CBF669912539682800D059CB /* PaytmNativeSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CB00DF0724EFDEFB00161E6E /* PaytmNativeSDK.framework */; };
+		CBF669922539682800D059CB /* PaytmNativeSDK.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = CB00DF0724EFDEFB00161E6E /* PaytmNativeSDK.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		E6A8EE6C25C81DA700BB2A85 /* CustomizeConsentViewVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6A8EE6B25C81DA700BB2A85 /* CustomizeConsentViewVC.swift */; };
 		E6F51C9B25C83F10009216BF /* GenericSearchVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6F51C9A25C83F10009216BF /* GenericSearchVC.swift */; };
 		E6F51CA625C8435D009216BF /* ColorExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6F51CA525C8435D009216BF /* ColorExtensions.swift */; };
@@ -53,6 +56,13 @@
 			remoteGlobalIDString = 179DD10723C4D2FD001BF94F;
 			remoteInfo = PaytmNativeSampleApp;
 		};
+		CB00DF0624EFDEFB00161E6E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = CB00DF0124EFDEFB00161E6E /* PaytmNativeSDK.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 179DD0E523C4D247001BF94F;
+			remoteInfo = PaytmNativeSDK;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -62,6 +72,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				CBF669922539682800D059CB /* PaytmNativeSDK.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -69,6 +80,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		14CE34032685BED800656D61 /* UPIIntentViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UPIIntentViewController.swift; sourceTree = "<group>"; };
 		170985C323DECD3F0056B0BE /* AllPayModesViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AllPayModesViewController.swift; sourceTree = "<group>"; };
 		172397CC23E2D58E00DFE8F7 /* AuthTokenViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthTokenViewController.swift; sourceTree = "<group>"; };
 		174C206223D2D0D800884228 /* UPIPushViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UPIPushViewController.swift; sourceTree = "<group>"; };
@@ -91,6 +103,7 @@
 		179DD12B23C4D2FF001BF94F /* PaytmNativeSampleAppUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaytmNativeSampleAppUITests.swift; sourceTree = "<group>"; };
 		179DD12D23C4D2FF001BF94F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		17B6780B23C85DE800DCF84F /* PaytmNativeSampleApp-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "PaytmNativeSampleApp-Bridging-Header.h"; sourceTree = "<group>"; };
+		CB00DF0124EFDEFB00161E6E /* PaytmNativeSDK.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = PaytmNativeSDK.xcodeproj; path = ../CustomUISDK/PaytmNativeSDK.xcodeproj; sourceTree = "<group>"; };
 		CBAA348D245963CD00673357 /* BankOfferViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BankOfferViewController.swift; sourceTree = "<group>"; };
 		E6A8EE6B25C81DA700BB2A85 /* CustomizeConsentViewVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomizeConsentViewVC.swift; sourceTree = "<group>"; };
 		E6F51C9A25C83F10009216BF /* GenericSearchVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenericSearchVC.swift; sourceTree = "<group>"; };
@@ -105,6 +118,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CBF669912539682800D059CB /* PaytmNativeSDK.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -128,6 +142,7 @@
 		179DD0FF23C4D2FD001BF94F = {
 			isa = PBXGroup;
 			children = (
+				CB00DF0124EFDEFB00161E6E /* PaytmNativeSDK.xcodeproj */,
 				179DD10A23C4D2FD001BF94F /* PaytmNativeSampleApp */,
 				179DD11F23C4D2FF001BF94F /* PaytmNativeSampleAppTests */,
 				179DD12A23C4D2FF001BF94F /* PaytmNativeSampleAppUITests */,
@@ -162,6 +177,7 @@
 				1799781023CF41DE00078A5D /* NewCardViewController.swift */,
 				174C206223D2D0D800884228 /* UPIPushViewController.swift */,
 				1772311423D9B0C200294BDB /* UPICollectViewController.swift */,
+				14CE34032685BED800656D61 /* UPIIntentViewController.swift */,
 				1772311723D9B84200294BDB /* SavedCardViewController.swift */,
 				172397CC23E2D58E00DFE8F7 /* AuthTokenViewController.swift */,
 				CBAA348D245963CD00673357 /* BankOfferViewController.swift */,
@@ -190,6 +206,14 @@
 				179DD12D23C4D2FF001BF94F /* Info.plist */,
 			);
 			path = PaytmNativeSampleAppUITests;
+			sourceTree = "<group>";
+		};
+		CB00DF0224EFDEFB00161E6E /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				CB00DF0724EFDEFB00161E6E /* PaytmNativeSDK.framework */,
+			);
+			name = Products;
 			sourceTree = "<group>";
 		};
 		E6F51CAF25C84383009216BF /* Extension */ = {
@@ -274,6 +298,12 @@
 			mainGroup = 179DD0FF23C4D2FD001BF94F;
 			productRefGroup = 179DD10923C4D2FD001BF94F /* Products */;
 			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = CB00DF0224EFDEFB00161E6E /* Products */;
+					ProjectRef = CB00DF0124EFDEFB00161E6E /* PaytmNativeSDK.xcodeproj */;
+				},
+			);
 			projectRoot = "";
 			targets = (
 				179DD10723C4D2FD001BF94F /* PaytmNativeSampleApp */,
@@ -282,6 +312,16 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		CB00DF0724EFDEFB00161E6E /* PaytmNativeSDK.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = PaytmNativeSDK.framework;
+			remoteRef = CB00DF0624EFDEFB00161E6E /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
 		179DD10623C4D2FD001BF94F /* Resources */ = {
@@ -353,6 +393,7 @@
 				1772311523D9B0C200294BDB /* UPICollectViewController.swift in Sources */,
 				1799781123CF41DE00078A5D /* NewCardViewController.swift in Sources */,
 				179DD10C23C4D2FD001BF94F /* AppDelegate.swift in Sources */,
+				14CE34042685BED800656D61 /* UPIIntentViewController.swift in Sources */,
 				172397CD23E2D58E00DFE8F7 /* AuthTokenViewController.swift in Sources */,
 				1799780523CF12B900078A5D /* NBViewController.swift in Sources */,
 				174C206323D2D0D800884228 /* UPIPushViewController.swift in Sources */,
@@ -541,9 +582,9 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.one97.paytm.all;
+				PRODUCT_BUNDLE_IDENTIFIER = com.one97.paytm.all.payments;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = PaytmAll_Development_Profile;
+				PROVISIONING_PROFILE_SPECIFIER = PaytmPayments_Development_Profile;
 				SWIFT_OBJC_BRIDGING_HEADER = "";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -569,9 +610,9 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.one97.paytm.all;
+				PRODUCT_BUNDLE_IDENTIFIER = com.one97.paytm.all.payments;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = PaytmAll_Development_Profile;
+				PROVISIONING_PROFILE_SPECIFIER = PaytmPayments_Development_Profile;
 				SWIFT_OBJC_BRIDGING_HEADER = "";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";

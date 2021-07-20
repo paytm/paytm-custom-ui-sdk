@@ -23,6 +23,8 @@ class UPICollectViewController: BaseViewController {
     @IBOutlet weak var switchSaveInstrument: UISwitch!
     @IBOutlet weak var pollingSwitch: UISwitch!
     
+    @IBOutlet weak var accessTokenSwitch: UISwitch!
+    @IBOutlet weak var txnTokenSwitch: UISwitch!
     
     @IBAction func switchPollingType(_ sender: Any) {
         if pollingSwitch.isOn {
@@ -33,6 +35,8 @@ class UPICollectViewController: BaseViewController {
         }
     }
     
+    let referenceId = "ref_98765432151017"
+
     override func viewDidLoad() {
         super.viewDidLoad()
         let date = NSDate(timeIntervalSince1970: 1596717607)
@@ -47,6 +51,127 @@ class UPICollectViewController: BaseViewController {
         self.proceedPayment(sender)
     }
     
+    @IBAction func tapOnVerifyVPA(_ sender: UIButton) {
+        guard let vpaAddress = vpaAddressTextField.text, !vpaAddress.isEmpty else {
+            self.showError(errorString: "vpaAddress is required.")
+            return
+        }
+        validateVPA(vpaAddress: vpaAddress)
+    }
+    
+    @IBAction func accessTokenSwitchAction(_ sender: UISwitch) {
+        if sender.isOn {
+            txnTokenSwitch.isOn = false
+            accessTokenSwitch.isOn = true
+        }
+    }
+    
+    @IBAction func txnTokenSwitchAction(_ sender: UISwitch) {
+        if sender.isOn {
+            txnTokenSwitch.isOn = true
+            accessTokenSwitch.isOn = false
+        }
+    }
+    
+    @IBAction func createCheckSum(_ sender: UIButton) {
+        if let childVC = self.children.first as? UINavigationController, let rootVC = childVC.viewControllers.first as? ViewController {
+            rootVC.createChecksumForAccessToken(refrenceId: referenceId)
+        }
+    }
+    
+    
+    func validateVPA(vpaAddress: String) {
+        if let childVC = self.children.first as? UINavigationController, let rootVC = childVC.viewControllers.first as? ViewController {
+            let merchantId = (rootVC.merchantIdTextField.text == "") ? "AliSub58582630351896" : rootVC.merchantIdTextField.text!
+            let baseUrlString = (self.appInvoke.getEnvironent() == .production) ? kProduction_ServerURL : kStaging_ServerURL
+            let token = (rootVC.ssoTokenTextField.text == "") ? "" : rootVC.ssoTokenTextField.text!
+            let checkSumToken = rootVC.checksumField.text ?? ""
+
+            if accessTokenSwitch.isOn {
+                //create token endPoint. to create accessToken
+//                    let urlString = "https://stage-webapp.paytm.in/api/createAccessToken.php?mid=\(merchantId)&referenceId=\("\(referenceId)")"
+                    let urlString =  "\(baseUrlString)/theia/api/v1/token/create?mid=\(merchantId))"
+                    var request = URLRequest(url: URL(string: urlString)!)
+                    request.httpMethod = "POST"
+                    request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+                    request.addValue("Basic cGF5dG1Vc2VyOkExaTFOZkw2TEc4NmtDdHdvZjNQQU8wTXVId21obTNhR1E=", forHTTPHeaderField: "Authorization")
+                
+                var head = [String:Any]()
+                
+                head["version"] = "v1"
+                let timeStamp = Date().timeIntervalSince1970 * 1000 // timestamp in millisecond
+                head["tokenType"] = "CHECKSUM"
+                head["token"] = "\(checkSumToken)"
+
+                var params = [String: Any]()
+                params["head"] = head
+                
+                let bodyParams = ["mid":"\(merchantId)", "referenceId": "\(referenceId)"]
+                params["body"] = bodyParams
+
+                    do {
+                        let data = try JSONSerialization.data(withJSONObject: params, options: .prettyPrinted)
+                        request.httpBody = data
+                    } catch {
+                        print(error)
+                    }
+                    URLSession.shared.dataTask(with: request) { [weak self] (data, response, error) in
+                        guard let `self` = self, let data = data else {
+                            return
+                        }
+                        do {
+                            if let jsonDict = try JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                                print(jsonDict)
+                                if let body = jsonDict["body"] as? [String : Any], let accessToken = body["accessToken"] as? String {
+                                    DispatchQueue.main.async {
+                                        self.appInvoke.isVpaValidated(vpa: vpaAddress, mid: merchantId, tokenType: .acccess, token: accessToken, referenceId: self.referenceId) { (response, error) in
+                                            if error != nil {
+                                                let alert = UIAlertController(title: "Fail", message: (response?.isEmpty ?? false) ? (error ?? nil) : String(describing: response), preferredStyle: .alert)
+                                                alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                                                self.present(alert, animated: true, completion: nil)
+                                            } else {
+                                                let alert = UIAlertController(title: "Success", message:  (response?.isEmpty ?? false) ? (error ?? nil) : String(describing: response), preferredStyle: .alert)
+                                                alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                                                self.present(alert, animated: true, completion: nil)
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    DispatchQueue.main.async {
+                                        let alert = UIAlertController(title: "Fail", message:  String(describing: jsonDict), preferredStyle: .alert)
+                                        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                                        self.present(alert, animated: true, completion: nil)
+                                    }
+                                }
+                            }
+                        }
+                        catch {
+                            print(error)
+                        }
+                    }.resume()
+                    
+                    return
+            } else {
+                rootVC.initiateTransitionToken { (orderId, merchantId, txnToken, token) in
+                    DispatchQueue.main.async {
+                        self.appInvoke.isVpaValidated(vpa: vpaAddress, mid: merchantId, tokenType: .txntoken, token: txnToken, referenceId: orderId) { (response, error) in
+                            if error != nil {
+                                let alert = UIAlertController(title: "Fail", message: (response?.isEmpty ?? false) ? (error ?? nil) : String(describing: response), preferredStyle: .alert)
+                                alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                                self.present(alert, animated: true, completion: nil)
+                            } else {
+                                let alert = UIAlertController(title: "Success", message:  (response?.isEmpty ?? false) ? (error ?? nil) : String(describing: response), preferredStyle: .alert)
+                                alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                                self.present(alert, animated: true, completion: nil)
+                                print(response)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+    }
     
     //MARK: Parms for Local Vault API
     func getParamsForSavedLocalVault() -> [String: Any] {

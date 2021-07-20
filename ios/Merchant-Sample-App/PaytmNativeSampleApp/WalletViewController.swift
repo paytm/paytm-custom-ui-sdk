@@ -63,6 +63,8 @@ class WalletViewController: BaseViewController {
                         if status {
                             self.appInvoke.callProcessTransactionAPI(selectedPayModel: selectedPayModel, delegate: self)
                             
+                        } else {
+                            self.showError(errorString: "something went wrong")
                         }
                         
                     }
@@ -91,6 +93,10 @@ class WalletViewController: BaseViewController {
                     return
                 }
                 do {
+                    if let err = error {
+                        self.showError(errorString: "\(err.localizedDescription)")
+                        return
+                    }
                     if let jsonDict = try JSONSerialization.jsonObject(with: data) as? [String: Any] {
 //                        print(jsonDict)
                         if let body = jsonDict["body"] as? [String : Any] {

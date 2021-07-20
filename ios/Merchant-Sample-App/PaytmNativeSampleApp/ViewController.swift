@@ -82,8 +82,9 @@ class ViewController: UIViewController {
         
         self.generateChecksum(orderId: orderId) { (Checksum) in
             checksum = Checksum ?? ""
+            print(checksum)
         }
-            var bodyParams = ["head": ["channelId":"WAP","clientId":clientId, "requestTimestamp":"Time","signature": "CH","version":"v1"],"body":["callbackUrl":"\(baseUrlString)/theia/paytmCallback?ORDER_ID=\(orderId)&MID=\(merchantId)","mid":"\(merchantId)","orderId":"\(orderId)","requestType":"Payment","websiteName":"retail","paytmSsoToken":"\(token)","txnAmount":["value":"\(amount)","currency":"INR"],"userInfo":["custId":"cid"]]]
+        let bodyParams = ["head": ["channelId":"WAP","clientId":clientId, "requestTimestamp":"Time","signature": "CH","version":"v1"],"body":["callbackUrl":"\(baseUrlString)/theia/paytmCallback?ORDER_ID=\(orderId)&MID=\(merchantId)","mid":"\(merchantId)","orderId":"\(orderId)","requestType":"Payment","websiteName":"retail","paytmSsoToken":"\(token)","txnAmount":["value":"\(amount)","currency":"INR"],"userInfo":["custId":"cid"]]]
             do {
                 let data = try JSONSerialization.data(withJSONObject: bodyParams, options: .prettyPrinted)
                 request.httpBody = data
@@ -124,6 +125,41 @@ class ViewController: UIViewController {
                 }
             }.resume()
 //        }
+    }
+    
+    func createChecksumForAccessToken(refrenceId: String) {
+        let merchantId = (self.merchantIdTextField.text == "") ? "AliSub58582630351896" : self.merchantIdTextField.text!
+        let bodyParams = """
+                {
+                    "mid": "\(merchantId)",
+                    "referenceId":"\(refrenceId)"
+                }
+        """
+        
+        var body = URLComponents()
+        body.queryItems = [URLQueryItem(name: "json_string", value: bodyParams)]
+
+        var request = URLRequest(url: URL(string: "https://stage-webapp.paytm.in/checksum/generate.php?mid=\(merchantId)")!)
+        request.httpMethod = "POST"
+        request.addValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
+        request.addValue("Basic cGF5dG1Vc2VyOkExaTFOZkw2TEc4NmtDdHdvZjNQQU8wTXVId21obTNhR1E=", forHTTPHeaderField: "Authorization")
+        request.httpBody = body.query?.data(using: .utf8)
+        printRequest(request, for: "Generate Checksum")
+
+        URLSession.shared.dataTask(with: request) {(data, response, error) in
+            guard let data = data else {
+                return
+            }
+            do {
+                if let jsonDict = try JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                    self.printResponse(jsonDict, for: "Generate Checksum")
+                    let checksum = jsonDict["checksum"] as? String
+//                    print("CheckSum: \(checksum ?? "")")
+                }
+            } catch {
+                print("🔴", error)
+            }
+        }.resume()
     }
     
     func generateChecksum(orderId: String, completion: @escaping ((String?)->())) {
@@ -186,7 +222,7 @@ class ViewController: UIViewController {
     
     func printResponse(_ dict: [String:Any]?, for api: String) {
         print("🔶 \(api) Response")
-        print(dict)
+        print(dict ?? [:])
         print("--------------------")
     }
 
