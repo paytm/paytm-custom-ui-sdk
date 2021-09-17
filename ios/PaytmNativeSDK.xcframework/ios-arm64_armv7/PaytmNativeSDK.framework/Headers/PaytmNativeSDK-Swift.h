@@ -254,10 +254,26 @@ SWIFT_CLASS("_TtC14PaytmNativeSDK19AINativeConsentView")
 
 
 
+typedef SWIFT_ENUM(NSInteger, AINativePaymentModes, open) {
+  AINativePaymentModesWallet = 0,
+  AINativePaymentModesPaymentBank = 1,
+  AINativePaymentModesPostPaid = 2,
+  AINativePaymentModesUpi = 3,
+  AINativePaymentModesCreditCard = 4,
+  AINativePaymentModesDebitCard = 5,
+  AINativePaymentModesNetBanking = 6,
+};
+
 typedef SWIFT_ENUM(NSInteger, AlertViewType, open) {
   AlertViewTypeNone = 0,
   AlertViewTypeLocal = 1,
   AlertViewTypeService = 2,
+};
+
+typedef SWIFT_ENUM(NSInteger, AuthMode, open) {
+  AuthModeOtp = 0,
+  AuthModeAtm = 1,
+  AuthModeNone = 2,
 };
 
 @class NSError;
@@ -639,10 +655,26 @@ SWIFT_CLASS("_TtC14PaytmNativeSDK19AINativeConsentView")
 
 
 
+typedef SWIFT_ENUM(NSInteger, AINativePaymentModes, open) {
+  AINativePaymentModesWallet = 0,
+  AINativePaymentModesPaymentBank = 1,
+  AINativePaymentModesPostPaid = 2,
+  AINativePaymentModesUpi = 3,
+  AINativePaymentModesCreditCard = 4,
+  AINativePaymentModesDebitCard = 5,
+  AINativePaymentModesNetBanking = 6,
+};
+
 typedef SWIFT_ENUM(NSInteger, AlertViewType, open) {
   AlertViewTypeNone = 0,
   AlertViewTypeLocal = 1,
   AlertViewTypeService = 2,
+};
+
+typedef SWIFT_ENUM(NSInteger, AuthMode, open) {
+  AuthModeOtp = 0,
+  AuthModeAtm = 1,
+  AuthModeNone = 2,
 };
 
 @class NSError;
