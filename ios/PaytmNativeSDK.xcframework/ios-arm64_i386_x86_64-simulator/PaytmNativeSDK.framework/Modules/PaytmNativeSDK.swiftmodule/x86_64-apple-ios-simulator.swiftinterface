@@ -1,5 +1,5 @@
 // swift-interface-format-version: 1.0
-// swift-compiler-version: Apple Swift version 5.3.2 (swiftlang-1200.0.45 clang-1200.0.32.28)
+// swift-compiler-version: Apple Swift version 5.6.1 (swiftlang-5.6.0.323.66 clang-1316.0.20.12)
 // swift-module-flags: -target x86_64-apple-ios10.0-simulator -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -module-name PaytmNativeSDK
 import SystemConfiguration.CaptiveNetwork
 import CoreLocation
@@ -9,15 +9,16 @@ import Swift
 import SystemConfiguration
 import UIKit
 import WebKit
+import _Concurrency
 public enum AINativeTokenFlowStatus {
   case inProcess
   case appNotInstall
   case error
   public static func == (a: PaytmNativeSDK.AINativeTokenFlowStatus, b: PaytmNativeSDK.AINativeTokenFlowStatus) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
   public var hashValue: Swift.Int {
     get
   }
-  public func hash(into hasher: inout Swift.Hasher)
 }
 public enum OrderStatus {
   case none
@@ -26,10 +27,10 @@ public enum OrderStatus {
   case failure
   case timeElapsed
   public static func == (a: PaytmNativeSDK.OrderStatus, b: PaytmNativeSDK.OrderStatus) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
   public var hashValue: Swift.Int {
     get
   }
-  public func hash(into hasher: inout Swift.Hasher)
 }
 public struct UpiCollectConfigurations {
   public init(shouldAllowCustomPolling: Swift.Bool, isAutoPolling: Swift.Bool)
@@ -48,11 +49,11 @@ public typealias UPIIntentCallBack = ([Swift.String : Any]?, Swift.String?) -> S
     get
   }
 }
-extension AIHandler {
+extension PaytmNativeSDK.AIHandler {
   public class func initWithNotification(appInvokeData: [Swift.String : Any])
   @objc dynamic public func recieveNotificationForUPI(notification: Foundation.NSNotification)
 }
-extension AIHandler {
+extension PaytmNativeSDK.AIHandler {
   public func getEnvironent() -> PaytmNativeSDK.AIEnvironment
   public func setEnvironment(_ env: PaytmNativeSDK.AIEnvironment)
   public func callProcessTransitionAPIForCollect(selectedPayModel: PaytmNativeSDK.AINativeNUPIarameterModel, delegate: PaytmNativeSDK.AIDelegate, upiPollingConfig: PaytmNativeSDK.UpiCollectConfigurations, responseCallback callback: @escaping (([Swift.String : Any]) -> Swift.Void))
@@ -69,23 +70,23 @@ extension AIHandler {
   public func getInstrumentFromLocalVault(custId: Swift.String, mid: Swift.String, ssoToken: Swift.String = "", checksum: Swift.String, delegate: PaytmNativeSDK.AIDelegate)
   public func getParamsForSavedLocalVault(custId: Swift.String, mid: Swift.String, ssoToken: Swift.String = "", checksum: Swift.String) -> [Swift.String : Any]
   public func fetchBin(selectedPayModel: PaytmNativeSDK.AINativeSavedCardParameterModel, delegate: PaytmNativeSDK.AIDelegate)
-  public func getAuthToken(clientId: Swift.String, mid: Swift.String, completion: (PaytmNativeSDK.AINativeTokenFlowStatus) -> Swift.Void)
+  public func getAuthToken(clientId: Swift.String, mid: Swift.String, urlScheme: Swift.String? = nil, completion: (PaytmNativeSDK.AINativeTokenFlowStatus) -> Swift.Void)
   public func openRedirectionFlow(selectedPayModel: PaytmNativeSDK.AINativeInhouseParameterModel? = nil, orderId: Swift.String, txnToken: Swift.String, mid: Swift.String, delegate: PaytmNativeSDK.AIDelegate?)
   public func getUPIBalance(bankDetails: [Swift.String : Any], mid: Swift.String, completion: (PaytmNativeSDK.AINativeTokenFlowStatus) -> Swift.Void)
   public func setupUPIPin(bankDetails: [Swift.String : Any], mid: Swift.String, completion: (PaytmNativeSDK.AINativeTokenFlowStatus) -> Swift.Void)
   public func fetchNetBankingChannels(selectedPayModel: PaytmNativeSDK.AINativeNBParameterModel, delegate: PaytmNativeSDK.AIDelegate)
 }
-extension AIHandler {
+extension PaytmNativeSDK.AIHandler {
   public func getSavedVPA() -> Swift.String?
   public func saveVPA(vpa: Swift.String)
   public func getSavedNetBankingMethod() -> Swift.String?
   public func saveNetBankingMethod(channelCode: Swift.String)
 }
-extension AIHandler {
+extension PaytmNativeSDK.AIHandler {
   public func pollingForStatus(selectedPayMode: PaytmNativeSDK.AINativeBaseParameterModel)
-  public func isVpaValidated(vpa: Swift.String, mid: Swift.String, tokenType: PaytmNativeSDK.TokenType, token: Swift.String, referenceId: Swift.String, completionHandler: PaytmNativeSDK.ValidateVPA)
+  public func isVpaValidated(vpa: Swift.String? = "", upiNumber: Swift.String? = "", mid: Swift.String, tokenType: PaytmNativeSDK.TokenType, token: Swift.String, referenceId: Swift.String, completionHandler: PaytmNativeSDK.ValidateVPA)
 }
-extension AIHandler : PaytmNativeSDK.AIDelegate {
+extension PaytmNativeSDK.AIHandler : PaytmNativeSDK.AIDelegate {
   @objc dynamic public func didFinish(with success: Swift.Bool, response: [Swift.String : Any], error: Swift.String?, withUserCancellation hasUserCancelledTransaction: Swift.Bool)
   @objc dynamic public func openPaymentController(_ controller: UIKit.UIViewController)
 }
@@ -93,61 +94,61 @@ extension AIHandler : PaytmNativeSDK.AIDelegate {
   case none = 0
   case local
   case service
-  public typealias RawValue = Swift.Int
   public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
   public var rawValue: Swift.Int {
     get
   }
 }
 public typealias AlertViewWithBlockHandler = (PaytmNativeSDK.JRAlertViewWithBlock?, Swift.Int) -> Swift.Void
-@objc @_inheritsConvenienceInitializers public class JRAlertViewWithBlock : UIKit.UIAlertController {
-  @objc public var topViewcontroller: UIKit.UIViewController?
-  public func show()
-  public func show(_ handler: PaytmNativeSDK.AlertViewWithBlockHandler?)
-  public func show(_ handler: PaytmNativeSDK.AlertViewWithBlockHandler?, otherButtonhandler: PaytmNativeSDK.AlertViewWithBlockHandler?)
-  @objc public func show(_ cancelButtonTitle: Swift.String?, handler: PaytmNativeSDK.AlertViewWithBlockHandler?, otherButtonTitles: Swift.String?, otherButtonhandler: PaytmNativeSDK.AlertViewWithBlockHandler?)
-  @objc public func show(_ cancelButtonTitle: Swift.String?, handler: PaytmNativeSDK.AlertViewWithBlockHandler?, otherButtonTitleList: [Swift.String]?, otherButtonhandler: PaytmNativeSDK.AlertViewWithBlockHandler?)
-  @objc public class func showAlertView(_ message: Swift.String?)
-  @objc public class func showAlertViewWithMessage(_ message: Swift.String?, handler: PaytmNativeSDK.AlertViewWithBlockHandler?)
-  @objc public class func showAlertView(_ title: Swift.String?, message: Swift.String?)
-  @objc public class func showAlertViewWithTitle(_ title: Swift.String?, message: Swift.String?)
-  @objc public class func showAlertView(_ title: Swift.String?, message: Swift.String?, handler: PaytmNativeSDK.AlertViewWithBlockHandler?)
-  public class func showAlertViewWithTitle(_ title: Swift.String?, message: Swift.String?, handler: PaytmNativeSDK.AlertViewWithBlockHandler?)
-  @objc public class func showAlertView(_ title: Swift.String?, message: Swift.String?, cancelButtonTitle: Swift.String?, otherButtonTitles: Swift.String?, handler: PaytmNativeSDK.AlertViewWithBlockHandler?)
-  public class func showAlertView(_ title: Swift.String?, message: Swift.String?, controller: UIKit.UIViewController?, cancelButtonTitle: Swift.String?, otherButtonTitles: Swift.String?, handler: PaytmNativeSDK.AlertViewWithBlockHandler?)
-  public class func showAlertViewWithLeftAlignment(_ title: Swift.String?, message: Swift.String?, handler: PaytmNativeSDK.AlertViewWithBlockHandler?)
-  @objc public class func showError(_ error: Foundation.NSError?)
-  @objc public class func showError(_ error: Foundation.NSError?, handler: PaytmNativeSDK.AlertViewWithBlockHandler?)
+@objc @_inheritsConvenienceInitializers @_Concurrency.MainActor(unsafe) public class JRAlertViewWithBlock : UIKit.UIAlertController {
+  @objc @_Concurrency.MainActor(unsafe) public var topViewcontroller: UIKit.UIViewController?
+  @_Concurrency.MainActor(unsafe) public func show()
+  @_Concurrency.MainActor(unsafe) public func show(_ handler: PaytmNativeSDK.AlertViewWithBlockHandler?)
+  @_Concurrency.MainActor(unsafe) public func show(_ handler: PaytmNativeSDK.AlertViewWithBlockHandler?, otherButtonhandler: PaytmNativeSDK.AlertViewWithBlockHandler?)
+  @objc @_Concurrency.MainActor(unsafe) public func show(_ cancelButtonTitle: Swift.String?, handler: PaytmNativeSDK.AlertViewWithBlockHandler?, otherButtonTitles: Swift.String?, otherButtonhandler: PaytmNativeSDK.AlertViewWithBlockHandler?)
+  @objc @_Concurrency.MainActor(unsafe) public func show(_ cancelButtonTitle: Swift.String?, handler: PaytmNativeSDK.AlertViewWithBlockHandler?, otherButtonTitleList: [Swift.String]?, otherButtonhandler: PaytmNativeSDK.AlertViewWithBlockHandler?)
+  @objc @_Concurrency.MainActor(unsafe) public class func showAlertView(_ message: Swift.String?)
+  @objc @_Concurrency.MainActor(unsafe) public class func showAlertViewWithMessage(_ message: Swift.String?, handler: PaytmNativeSDK.AlertViewWithBlockHandler?)
+  @objc @_Concurrency.MainActor(unsafe) public class func showAlertView(_ title: Swift.String?, message: Swift.String?)
+  @objc @_Concurrency.MainActor(unsafe) public class func showAlertViewWithTitle(_ title: Swift.String?, message: Swift.String?)
+  @objc @_Concurrency.MainActor(unsafe) public class func showAlertView(_ title: Swift.String?, message: Swift.String?, handler: PaytmNativeSDK.AlertViewWithBlockHandler?)
+  @_Concurrency.MainActor(unsafe) public class func showAlertViewWithTitle(_ title: Swift.String?, message: Swift.String?, handler: PaytmNativeSDK.AlertViewWithBlockHandler?)
+  @objc @_Concurrency.MainActor(unsafe) public class func showAlertView(_ title: Swift.String?, message: Swift.String?, cancelButtonTitle: Swift.String?, otherButtonTitles: Swift.String?, handler: PaytmNativeSDK.AlertViewWithBlockHandler?)
+  @_Concurrency.MainActor(unsafe) public class func showAlertView(_ title: Swift.String?, message: Swift.String?, controller: UIKit.UIViewController?, cancelButtonTitle: Swift.String?, otherButtonTitles: Swift.String?, handler: PaytmNativeSDK.AlertViewWithBlockHandler?)
+  @_Concurrency.MainActor(unsafe) public class func showAlertViewWithLeftAlignment(_ title: Swift.String?, message: Swift.String?, handler: PaytmNativeSDK.AlertViewWithBlockHandler?)
+  @objc @_Concurrency.MainActor(unsafe) public class func showError(_ error: Foundation.NSError?)
+  @objc @_Concurrency.MainActor(unsafe) public class func showError(_ error: Foundation.NSError?, handler: PaytmNativeSDK.AlertViewWithBlockHandler?)
+  @_Concurrency.MainActor(unsafe) @objc override dynamic public init(nibName nibNameOrNil: Swift.String?, bundle nibBundleOrNil: Foundation.Bundle?)
+  @_Concurrency.MainActor(unsafe) @objc required dynamic public init?(coder: Foundation.NSCoder)
   @objc deinit
-  @objc override dynamic public init(nibName nibNameOrNil: Swift.String?, bundle nibBundleOrNil: Foundation.Bundle?)
-  @objc required dynamic public init?(coder: Foundation.NSCoder)
 }
-extension JRAlertViewWithBlock {
-  @objc dynamic public class func showError(_ error: Foundation.NSError?, withErrorType errorType: PaytmNativeSDK.AlertViewType)
-  @objc dynamic public class func showError(_ error: Foundation.NSError?, withErrorType errorType: PaytmNativeSDK.AlertViewType, handler: PaytmNativeSDK.AlertViewWithBlockHandler?)
-  @objc dynamic public class func showAlertView(_ message: Swift.String?, withErrorType errorType: PaytmNativeSDK.AlertViewType)
-  @objc dynamic public class func showAlertViewWithMessage(_ message: Swift.String?, withErrorType errorType: PaytmNativeSDK.AlertViewType, handler: PaytmNativeSDK.AlertViewWithBlockHandler?)
-  @objc dynamic public class func showAlertView(_ title: Swift.String?, message: Swift.String?, withErrorType errorType: PaytmNativeSDK.AlertViewType)
-  @objc dynamic public class func showAlertViewWithTitle(_ title: Swift.String?, message: Swift.String?, withErrorType errorType: PaytmNativeSDK.AlertViewType)
-  @objc dynamic public class func showAlertView(_ title: Swift.String?, message: Swift.String?, withErrorType errorType: PaytmNativeSDK.AlertViewType, handler: PaytmNativeSDK.AlertViewWithBlockHandler?)
-  public class func showAlertViewWithTitle(_ title: Swift.String?, message: Swift.String?, withErrorType errorType: PaytmNativeSDK.AlertViewType, handler: PaytmNativeSDK.AlertViewWithBlockHandler?)
-  @objc dynamic public class func showAlertView(_ title: Swift.String?, message: Swift.String?, withErrorType errorType: PaytmNativeSDK.AlertViewType, cancelButtonTitle: Swift.String?, otherButtonTitles: Swift.String?, handler: PaytmNativeSDK.AlertViewWithBlockHandler?)
+extension PaytmNativeSDK.JRAlertViewWithBlock {
+  @objc @_Concurrency.MainActor(unsafe) dynamic public class func showError(_ error: Foundation.NSError?, withErrorType errorType: PaytmNativeSDK.AlertViewType)
+  @objc @_Concurrency.MainActor(unsafe) dynamic public class func showError(_ error: Foundation.NSError?, withErrorType errorType: PaytmNativeSDK.AlertViewType, handler: PaytmNativeSDK.AlertViewWithBlockHandler?)
+  @objc @_Concurrency.MainActor(unsafe) dynamic public class func showAlertView(_ message: Swift.String?, withErrorType errorType: PaytmNativeSDK.AlertViewType)
+  @objc @_Concurrency.MainActor(unsafe) dynamic public class func showAlertViewWithMessage(_ message: Swift.String?, withErrorType errorType: PaytmNativeSDK.AlertViewType, handler: PaytmNativeSDK.AlertViewWithBlockHandler?)
+  @objc @_Concurrency.MainActor(unsafe) dynamic public class func showAlertView(_ title: Swift.String?, message: Swift.String?, withErrorType errorType: PaytmNativeSDK.AlertViewType)
+  @objc @_Concurrency.MainActor(unsafe) dynamic public class func showAlertViewWithTitle(_ title: Swift.String?, message: Swift.String?, withErrorType errorType: PaytmNativeSDK.AlertViewType)
+  @objc @_Concurrency.MainActor(unsafe) dynamic public class func showAlertView(_ title: Swift.String?, message: Swift.String?, withErrorType errorType: PaytmNativeSDK.AlertViewType, handler: PaytmNativeSDK.AlertViewWithBlockHandler?)
+  @_Concurrency.MainActor(unsafe) public class func showAlertViewWithTitle(_ title: Swift.String?, message: Swift.String?, withErrorType errorType: PaytmNativeSDK.AlertViewType, handler: PaytmNativeSDK.AlertViewWithBlockHandler?)
+  @objc @_Concurrency.MainActor(unsafe) dynamic public class func showAlertView(_ title: Swift.String?, message: Swift.String?, withErrorType errorType: PaytmNativeSDK.AlertViewType, cancelButtonTitle: Swift.String?, otherButtonTitles: Swift.String?, handler: PaytmNativeSDK.AlertViewWithBlockHandler?)
 }
-@objc @_inheritsConvenienceInitializers public class JRPasscodeTextField : UIKit.UITextField {
-  @objc override dynamic public func deleteBackward()
+@objc @_inheritsConvenienceInitializers @_Concurrency.MainActor(unsafe) public class JRPasscodeTextField : UIKit.UITextField {
+  @_Concurrency.MainActor(unsafe) @objc override dynamic public func deleteBackward()
+  @_Concurrency.MainActor(unsafe) @objc override dynamic public init(frame: CoreGraphics.CGRect)
+  @_Concurrency.MainActor(unsafe) @objc required dynamic public init?(coder: Foundation.NSCoder)
   @objc deinit
-  @objc override dynamic public init(frame: CoreGraphics.CGRect)
-  @objc required dynamic public init?(coder: Foundation.NSCoder)
 }
-@objc(AIDelegate) public protocol AIDelegate : AnyObject {
+@objc(AIDelegate) public protocol AIDelegate {
   @objc func didFinish(with success: Swift.Bool, response: [Swift.String : Any], error: Swift.String?, withUserCancellation hasUserCancelledTransaction: Swift.Bool)
   @objc func openPaymentController(_ controller: UIKit.UIViewController)
 }
 @objc(AIEnvironment) public enum AIEnvironment : Swift.Int {
   case production
   case staging
-  public typealias RawValue = Swift.Int
   public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
   public var rawValue: Swift.Int {
     get
   }
@@ -156,11 +157,11 @@ public enum AINativePaymentFlow : Swift.String {
   case hybrid
   case addAndPay
   case none
+  public init?(rawValue: Swift.String)
   public typealias RawValue = Swift.String
   public var rawValue: Swift.String {
     get
   }
-  public init?(rawValue: Swift.String)
 }
 @objc public enum AINativePaymentModes : Swift.Int {
   case wallet = 0
@@ -170,8 +171,8 @@ public enum AINativePaymentFlow : Swift.String {
   case creditCard
   case debitCard
   case netBanking
-  public typealias RawValue = Swift.Int
   public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
   public var rawValue: Swift.Int {
     get
   }
@@ -180,8 +181,8 @@ public enum AINativePaymentFlow : Swift.String {
   case otp
   case atm
   case none
-  public typealias RawValue = Swift.Int
   public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
   public var rawValue: Swift.Int {
     get
   }
@@ -189,13 +190,13 @@ public enum AINativePaymentFlow : Swift.String {
 public enum AINativeUPIFlow : Swift.String {
   case collect
   case push
-  public typealias RawValue = Swift.String
   public init?(rawValue: Swift.String)
+  public typealias RawValue = Swift.String
   public var rawValue: Swift.String {
     get
   }
 }
-@objc @_inheritsConvenienceInitializers final public class AINativeConsentView : UIKit.UIView {
+@objc @_inheritsConvenienceInitializers @_Concurrency.MainActor(unsafe) final public class AINativeConsentView : UIKit.UIView {
   public struct Theme {
     public let backgroundColor: UIKit.UIColor
     public let textFont: UIKit.UIFont
@@ -209,24 +210,24 @@ public enum AINativeUPIFlow : Swift.String {
       get
     }
   }
-  final public var consentCallback: ((Swift.Bool) -> Swift.Void)?
-  @objc override dynamic public init(frame: CoreGraphics.CGRect)
-  @objc required dynamic public init?(coder aDecoder: Foundation.NSCoder)
+  @_Concurrency.MainActor(unsafe) final public var consentCallback: ((Swift.Bool) -> Swift.Void)?
+  @_Concurrency.MainActor(unsafe) @objc override dynamic public init(frame: CoreGraphics.CGRect)
+  @_Concurrency.MainActor(unsafe) @objc required dynamic public init?(coder aDecoder: Foundation.NSCoder)
   @objc deinit
 }
-extension AINativeConsentView {
-  final public func setBackgroundColor(_ color: UIKit.UIColor)
-  final public func setFontFamily(_ family: Swift.String)
-  final public func setFontSize(_ size: CoreGraphics.CGFloat)
-  final public func setFont(_ font: UIKit.UIFont)
-  final public func setTextColor(_ color: UIKit.UIColor)
-  final public func setSelectedCheckmarkImage(_ image: UIKit.UIImage?)
-  final public func setSelectedCheckmarkTint(_ tintColor: UIKit.UIColor)
-  final public func setUnselectedCheckmarkImage(_ image: UIKit.UIImage?)
-  final public func setUnselectedCheckmarkTint(_ tintColor: UIKit.UIColor)
-  final public func applyTheme(_ theme: PaytmNativeSDK.AINativeConsentView.Theme)
+extension PaytmNativeSDK.AINativeConsentView {
+  @_Concurrency.MainActor(unsafe) final public func setBackgroundColor(_ color: UIKit.UIColor)
+  @_Concurrency.MainActor(unsafe) final public func setFontFamily(_ family: Swift.String)
+  @_Concurrency.MainActor(unsafe) final public func setFontSize(_ size: CoreGraphics.CGFloat)
+  @_Concurrency.MainActor(unsafe) final public func setFont(_ font: UIKit.UIFont)
+  @_Concurrency.MainActor(unsafe) final public func setTextColor(_ color: UIKit.UIColor)
+  @_Concurrency.MainActor(unsafe) final public func setSelectedCheckmarkImage(_ image: UIKit.UIImage?)
+  @_Concurrency.MainActor(unsafe) final public func setSelectedCheckmarkTint(_ tintColor: UIKit.UIColor)
+  @_Concurrency.MainActor(unsafe) final public func setUnselectedCheckmarkImage(_ image: UIKit.UIImage?)
+  @_Concurrency.MainActor(unsafe) final public func setUnselectedCheckmarkTint(_ tintColor: UIKit.UIColor)
+  @_Concurrency.MainActor(unsafe) final public func applyTheme(_ theme: PaytmNativeSDK.AINativeConsentView.Theme)
 }
-extension Dictionary {
+extension Swift.Dictionary {
   public mutating func setValue(value: Any, forKeyPath keyPath: Swift.String)
 }
 @_hasMissingDesignatedInitializers public class AIPollingModel {
@@ -236,8 +237,8 @@ public enum TokenType : Swift.String {
   case acccess
   case txntoken
   case checksum
-  public typealias RawValue = Swift.String
   public init?(rawValue: Swift.String)
+  public typealias RawValue = Swift.String
   public var rawValue: Swift.String {
     get
   }
@@ -246,29 +247,33 @@ public enum PspApp : Swift.String {
   case paytm
   case gPay
   case phonePe
+  public init?(rawValue: Swift.String)
   public typealias RawValue = Swift.String
   public var rawValue: Swift.String {
     get
   }
-  public init?(rawValue: Swift.String)
 }
 @_hasMissingDesignatedInitializers public class AINativeBaseParameterModel {
   @objc deinit
 }
 @_hasMissingDesignatedInitializers public class AINativeInhouseParameterModel : PaytmNativeSDK.AINativeBaseParameterModel {
-  public init(withTransactionToken txnToken: Swift.String, orderId: Swift.String, shouldOpenNativePlusFlow: Swift.Bool, mid: Swift.String, flowType: PaytmNativeSDK.AINativePaymentFlow, paymentModes: PaytmNativeSDK.AINativePaymentModes, redirectionUrl: Swift.String = "https://securegw.paytm.in/theia/paytmCallback")
+  public init(withTransactionToken txnToken: Swift.String, orderId: Swift.String, shouldOpenNativePlusFlow: Swift.Bool, mid: Swift.String, flowType: PaytmNativeSDK.AINativePaymentFlow, paymentModes: PaytmNativeSDK.AINativePaymentModes, redirectionUrl: Swift.String = "https://securegw.paytm.in/theia/paytmCallback", urlScheme: Swift.String? = "")
   @objc deinit
 }
 @_hasMissingDesignatedInitializers public class AINativeSavedCardParameterModel : PaytmNativeSDK.AINativeBaseParameterModel {
-  public init(withTransactionToken txnToken: Swift.String, tokenType: PaytmNativeSDK.TokenType = .txntoken, orderId: Swift.String, shouldOpenNativePlusFlow: Swift.Bool, mid: Swift.String, flowType: PaytmNativeSDK.AINativePaymentFlow, paymentModes: PaytmNativeSDK.AINativePaymentModes, authMode: PaytmNativeSDK.AuthMode, cardId: Swift.String?, cardNumber: Swift.String?, cvv: Swift.String?, expiryDate: Swift.String?, newCard isNewCard: Swift.Bool, saveInstrument: Swift.String, redirectionUrl: Swift.String = "https://securegw.paytm.in/theia/paytmCallback", reference_Id: Swift.String = "")
+  public init(withTransactionToken txnToken: Swift.String, tokenType: PaytmNativeSDK.TokenType = .txntoken, orderId: Swift.String, shouldOpenNativePlusFlow: Swift.Bool, mid: Swift.String, flowType: PaytmNativeSDK.AINativePaymentFlow, paymentModes: PaytmNativeSDK.AINativePaymentModes, authMode: PaytmNativeSDK.AuthMode, cardId: Swift.String?, cardNumber: Swift.String?, cvv: Swift.String?, expiryDate: Swift.String?, newCard isNewCard: Swift.Bool, saveInstrument: Swift.String, redirectionUrl: Swift.String = "https://securegw.paytm.in/theia/paytmCallback", reference_Id: Swift.String = "", language: Swift.String? = "en", isEligibleForCoft: Swift.Bool? = false, isCoftUserConsent: Swift.Bool? = false, isCardPTCInfoRequired: Swift.Bool = false, urlScheme: Swift.String? = "")
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers public class AITokenizeCardParameterModel : PaytmNativeSDK.AINativeBaseParameterModel {
+  public init(withTransactionToken txnToken: Swift.String, tokenType: PaytmNativeSDK.TokenType = .txntoken, orderId: Swift.String, shouldOpenNativePlusFlow: Swift.Bool, mid: Swift.String, flowType: PaytmNativeSDK.AINativePaymentFlow, paymentModes: PaytmNativeSDK.AINativePaymentModes, authMode: PaytmNativeSDK.AuthMode, cardId: Swift.String?, cardNumber: Swift.String?, cvv: Swift.String?, expiryDate: Swift.String?, newCard isNewCard: Swift.Bool, saveInstrument: Swift.String, redirectionUrl: Swift.String = "https://securegw.paytm.in/theia/paytmCallback", reference_Id: Swift.String = "", isTokenizeCard: Swift.Bool? = false, cardToken: Swift.String? = "", tokenExpiry: Swift.String? = "", tAVV: Swift.String? = "", panUniqueRefernce: Swift.String? = "", cardSuffix: Swift.String? = "")
   @objc deinit
 }
 @_hasMissingDesignatedInitializers public class AINativeNBParameterModel : PaytmNativeSDK.AINativeBaseParameterModel {
-  public init(withTransactionToken txnToken: Swift.String, tokenType: PaytmNativeSDK.TokenType = .txntoken, orderId: Swift.String, shouldOpenNativePlusFlow: Swift.Bool, mid: Swift.String, flowType: PaytmNativeSDK.AINativePaymentFlow, paymentModes: PaytmNativeSDK.AINativePaymentModes, channelCode: Swift.String, redirectionUrl: Swift.String = "https://securegw.paytm.in/theia/paytmCallback", reference_Id: Swift.String = "")
+  public init(withTransactionToken txnToken: Swift.String, tokenType: PaytmNativeSDK.TokenType = .txntoken, orderId: Swift.String, shouldOpenNativePlusFlow: Swift.Bool, mid: Swift.String, flowType: PaytmNativeSDK.AINativePaymentFlow, paymentModes: PaytmNativeSDK.AINativePaymentModes, channelCode: Swift.String, redirectionUrl: Swift.String = "https://securegw.paytm.in/theia/paytmCallback", reference_Id: Swift.String = "", urlScheme: Swift.String? = "")
   @objc deinit
 }
 @_hasMissingDesignatedInitializers public class AINativeNUPIarameterModel : PaytmNativeSDK.AINativeBaseParameterModel {
-  public init(withTransactionToken txnToken: Swift.String, orderId: Swift.String, shouldOpenNativePlusFlow: Swift.Bool, mid: Swift.String, flowType: PaytmNativeSDK.AINativePaymentFlow, amount: CoreGraphics.CGFloat, paymentModes: PaytmNativeSDK.AINativePaymentModes, vpaAddress: Swift.String, upiFlowType: PaytmNativeSDK.AINativeUPIFlow, merchantInfo: [Swift.String : Any]?, bankDetail: [Swift.String : Any]?, redirectionUrl: Swift.String = "https://securegw.paytm.in/theia/paytmCallback")
+  public init(withTransactionToken txnToken: Swift.String, orderId: Swift.String, shouldOpenNativePlusFlow: Swift.Bool, mid: Swift.String, flowType: PaytmNativeSDK.AINativePaymentFlow, amount: CoreGraphics.CGFloat, paymentModes: PaytmNativeSDK.AINativePaymentModes, vpaAddress: Swift.String, upiFlowType: PaytmNativeSDK.AINativeUPIFlow, merchantInfo: [Swift.String : Any]?, bankDetail: [Swift.String : Any]?, redirectionUrl: Swift.String = "https://securegw.paytm.in/theia/paytmCallback", urlScheme: Swift.String? = "")
   @objc deinit
 }
 @_hasMissingDesignatedInitializers public class AINativeConsentManager {
@@ -282,8 +287,8 @@ public var kStaging_ServerURL: Swift.String
 public var kProduction_ServerURL: Swift.String
 public var kStaging_PGServerURL: Swift.String
 public var kProduction_PGServerURL: Swift.String
-extension UIDevice {
-  public var modelName: Swift.String {
+extension UIKit.UIDevice {
+  @_Concurrency.MainActor(unsafe) public var modelName: Swift.String {
     get
   }
 }
