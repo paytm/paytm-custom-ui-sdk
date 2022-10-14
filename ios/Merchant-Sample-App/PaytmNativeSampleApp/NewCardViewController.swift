@@ -24,6 +24,7 @@ class NewCardViewController: BaseViewController {
     var authModeType : AuthMode = .otp
     
 
+    @IBOutlet weak var getPTC: UISwitch!
     @IBOutlet weak var switchSaveInstrument: UISwitch!
     @IBOutlet weak var cardNumberTextField: UITextField!
     
@@ -33,8 +34,19 @@ class NewCardViewController: BaseViewController {
     @IBOutlet weak var authTypeSeg: UISegmentedControl!
     @IBOutlet weak var cardTypeSeg: UISegmentedControl!
     @IBOutlet weak var segIsAAuthToken: UISwitch!
+    @IBOutlet weak var isEligibleForCoftSwitch: UISwitch!
+    @IBOutlet weak var coftConsentSwitch: UISwitch!
+
+    var isCardPTCInfoRequired:Bool = false
     
-    
+    @IBAction func updateGetPTC(_ sender: Any) {
+        if self.getPTC.isOn {
+            isCardPTCInfoRequired = true
+        } else {
+            isCardPTCInfoRequired = false
+        }
+    }
+        
     @IBAction func authTokenSeg(_ sender: Any) {
         if  self.segIsAAuthToken.isOn {
             authenticationType = .authToken
@@ -93,9 +105,18 @@ class NewCardViewController: BaseViewController {
             }
 
             let checksum = (rootVC.checksumField.text == "") ? "" : rootVC.checksumField.text!
-            self.appInvoke.getInstrumentFromLocalVault(custId: "CUST001", mid: mid, ssoToken: sso, checksum: checksum, delegate: self)
+            let custId = (rootVC.custIdTextField.text == "") ? "CUST001" : rootVC.custIdTextField.text!
+            self.appInvoke.getInstrumentFromLocalVault(custId: custId, mid: mid, ssoToken: sso, checksum: checksum, delegate: self)
         }
 
+    }
+    
+    @IBAction func isEligibleForCoftSwitchAction(_ sender: UISwitch) {
+        isEligibleForCoftSwitch.isOn = sender.isOn
+    }
+    
+    @IBAction func coftConsentSwitchAction(_ sender: UISwitch) {
+        coftConsentSwitch.isOn = sender.isOn
     }
     
     override func hitInitiateTransactionAPI(_ env: AIEnvironment) {
@@ -123,12 +144,14 @@ class NewCardViewController: BaseViewController {
                 return
             }
          
+            let urlScheme = (rootVC.urlSchemeTextField.text == "") ? "" : rootVC.urlSchemeTextField.text!
             let updatedExpiry = cardExpireDate.replacingOccurrences(of: "/", with: "20")
             let baseUrlString = (env == .production) ? kProduction_ServerURL : kStaging_ServerURL
             let urlString = "\(baseUrlString)/theia/api/v1/initiateTransaction?mid=\(merchantId)&orderId=\(orderId)"
+            let custId = (rootVC.custIdTextField.text == "") ? "cid" : rootVC.custIdTextField.text!
 
             var request = URLRequest(url: URL(string: urlString)!)
-            let bodyParams = ["head": ["channelId":"WAP","clientId":clientId,"requestTimestamp":"Time","signature":"CH","version":"v1"],"body":["callbackUrl":"\(baseUrlString)/theia/paytmCallback?ORDER_ID=\(orderId)&MID=\(merchantId)","mid":"\(merchantId)","orderId":"\(orderId)","requestType":"Payment","websiteName":"retail","paytmSsoToken":"\(token)","txnAmount":["value":"\(amount)","currency":"INR"],"userInfo":["custId":"cid"]]]
+            let bodyParams = ["head": ["channelId":"WAP","clientId":clientId,"requestTimestamp":"Time","signature":"CH","version":"v1"],"body":["callbackUrl":"\(baseUrlString)/theia/paytmCallback?ORDER_ID=\(orderId)&MID=\(merchantId)","mid":"\(merchantId)","orderId":"\(orderId)","requestType":"Payment","websiteName":"retail","paytmSsoToken":"\(token)","txnAmount":["value":"\(amount)","currency":"INR"],"userInfo":["custId":custId]]]
             
             do {
                 let data = try JSONSerialization.data(withJSONObject: bodyParams, options: .prettyPrinted)
@@ -147,8 +170,9 @@ class NewCardViewController: BaseViewController {
                     if let jsonDict = try JSONSerialization.jsonObject(with: data) as? [String: Any] {
                         if let body = jsonDict["body"] as? [String : Any], let txnToken =  body["txnToken"] as? String {
                             DispatchQueue.main.async {
-                                self.appInvoke.callProcessTransactionAPI(selectedPayModel: AINativeSavedCardParameterModel.init(withTransactionToken: txnToken, orderId: orderId, shouldOpenNativePlusFlow: true, mid: merchantId, flowType: flowType, paymentModes: self.cardTypeSeg
-                                    .selectedSegmentIndex == 0 ? .debitCard :.creditCard  , authMode: self.authTypeSeg.selectedSegmentIndex == 0 ? .otp :.atm , cardId: nil, cardNumber: cardNumber, cvv: cardCVV, expiryDate: updatedExpiry, newCard: true, saveInstrument: self.saveInstrument, redirectionUrl: "\(baseUrlString)/theia/paytmCallback"), delegate: self)
+                                let model = AINativeSavedCardParameterModel.init(withTransactionToken: txnToken, orderId: orderId, shouldOpenNativePlusFlow: true, mid: merchantId, flowType: flowType, paymentModes: self.cardTypeSeg
+                                                                                    .selectedSegmentIndex == 0 ? .debitCard :.creditCard  , authMode: self.authTypeSeg.selectedSegmentIndex == 0 ? .otp :.atm , cardId: nil, cardNumber: cardNumber, cvv: cardCVV, expiryDate: updatedExpiry, newCard: true, saveInstrument: self.saveInstrument, redirectionUrl: "\(baseUrlString)/theia/paytmCallback",  isEligibleForCoft: self.isEligibleForCoftSwitch.isOn ? true: false, isCoftUserConsent: self.coftConsentSwitch.isOn ? true: false, isCardPTCInfoRequired: self.isCardPTCInfoRequired, urlScheme: urlScheme)
+                                self.appInvoke.callProcessTransactionAPI(selectedPayModel: model, delegate: self)
                             }
                         }
                     }
@@ -174,6 +198,8 @@ class NewCardViewController: BaseViewController {
             let token = (rootVC.ssoTokenTextField.text == "") ? "" : rootVC.ssoTokenTextField.text!
             let flowType: AINativePaymentFlow = AINativePaymentFlow(rawValue: (rootVC.flowTypeSegment.titleForSegment(at: rootVC.flowTypeSegment.selectedSegmentIndex) ?? "NONE")) ?? .none
             let baseUrlString = (env == .production) ? kProduction_ServerURL : kStaging_ServerURL
+            let urlScheme = (rootVC.urlSchemeTextField.text == "") ? "" : rootVC.urlSchemeTextField.text!
+
             _ = (self.cardNumberTextField.text == "") ? "" : self.cardNumberTextField.text
             //if auth token is requireed
             if authenticationType == .authToken {
@@ -203,7 +229,7 @@ class NewCardViewController: BaseViewController {
                                 print(jsonDict)
                                 if let body = jsonDict["body"] as? [String : Any], let accessToken = body["accessToken"] as? String {
                                     DispatchQueue.main.async {
-                                        self.selectedModel = AINativeSavedCardParameterModel.init(withTransactionToken: accessToken, tokenType: TokenType.acccess, orderId: orderId, shouldOpenNativePlusFlow: true, mid: merchantId, flowType: flowType, paymentModes: self.selectedCardType , authMode: self.authModeType , cardId: nil, cardNumber: bin, cvv: "", expiryDate: "", newCard: true, saveInstrument: self.saveInstrument, redirectionUrl: "\(baseUrlString)/theia/paytmCallback", reference_Id: "REF_1599222064")
+                                        self.selectedModel = AINativeSavedCardParameterModel.init(withTransactionToken: accessToken, tokenType: TokenType.acccess, orderId: orderId, shouldOpenNativePlusFlow: true, mid: merchantId, flowType: flowType, paymentModes: self.selectedCardType , authMode: self.authModeType , cardId: nil, cardNumber: bin, cvv: "", expiryDate: "", newCard: true, saveInstrument: self.saveInstrument, redirectionUrl: "\(baseUrlString)/theia/paytmCallback", reference_Id: "REF_1599222064", urlScheme: urlScheme)
                                         
                                         //fetch bin call with transaction token
                                         self.appInvoke.fetchBin(selectedPayModel: self.selectedModel!, delegate: self)
@@ -245,7 +271,9 @@ class NewCardViewController: BaseViewController {
                 //else if flow is of txnToken .
                 let urlString = "\(baseUrlString)/theia/api/v1/initiateTransaction?mid=\(merchantId)&orderId=\(orderId)"
                 var request = URLRequest(url: URL(string: urlString)!)
-                let bodyParams = ["head": ["channelId":"WAP","clientId":"pg-mid-test-prod","requestTimestamp":"Time","signature":"CH","version":"v1"],"body":["callbackUrl":"\(baseUrlString)/theia/paytmCallback?ORDER_ID=\(orderId)&MID=\(merchantId)","mid":"\(merchantId)","orderId":"\(orderId)","requestType":"Payment","websiteName":"retail","paytmSsoToken":"\(token)","txnAmount":["value":"\(amount)","currency":"INR"],"userInfo":["custId":"cid"]]]
+                let custId = (rootVC.custIdTextField.text == "") ? "cid" : rootVC.custIdTextField.text!
+                let bodyParams = ["head": ["channelId":"WAP","clientId":"pg-mid-test-prod","requestTimestamp":"Time","signature":"CH","version":"v1"],"body":["callbackUrl":"\(baseUrlString)/theia/paytmCallback?ORDER_ID=\(orderId)&MID=\(merchantId)","mid":"\(merchantId)","orderId":"\(orderId)","requestType":"Payment","websiteName":"retail","paytmSsoToken":"\(token)","txnAmount":["value":"\(amount)","currency":"INR"],"userInfo":["custId":custId]]]
+                
                 do {
                     let data = try JSONSerialization.data(withJSONObject: bodyParams, options: .prettyPrinted)
                     request.httpBody = data
@@ -264,13 +292,15 @@ class NewCardViewController: BaseViewController {
                             print(jsonDict)
                             if let body = jsonDict["body"] as? [String : Any], let txnToken =  body["txnToken"] as? String {
                                 DispatchQueue.main.async {
-                                    self.selectedModel = AINativeSavedCardParameterModel.init(withTransactionToken: txnToken, orderId: orderId, shouldOpenNativePlusFlow: true, mid: merchantId, flowType: flowType, paymentModes: self.selectedCardType, authMode: self.authModeType, cardId: nil, cardNumber: bin, cvv: "", expiryDate: "", newCard: true, saveInstrument: self.saveInstrument, redirectionUrl: "\(baseUrlString)/theia/paytmCallback")
+                                    self.selectedModel = AINativeSavedCardParameterModel.init(withTransactionToken: txnToken, orderId: orderId, shouldOpenNativePlusFlow: true, mid: merchantId, flowType: flowType, paymentModes: self.selectedCardType, authMode: self.authModeType, cardId: nil, cardNumber: bin, cvv: "", expiryDate: "", newCard: true, saveInstrument: self.saveInstrument, redirectionUrl: "\(baseUrlString)/theia/paytmCallback", urlScheme: urlScheme)
                                     
                                     //fetch bin call with transaction token
                                     self.appInvoke.fetchBin(selectedPayModel: self.selectedModel!, delegate: self)
                                 }
                             } else {
-                                self.showError(errorString: jsonDict.description)
+                                DispatchQueue.main.async {
+                                    self.showError(errorString: jsonDict.description)
+                                }
                             }
                         }
                     }
@@ -291,7 +321,8 @@ class NewCardViewController: BaseViewController {
             //let merchantId = (rootVC.merchantIdTextField.text == "") ? "AliSub97944711094182" : rootVC.merchantIdTextField.text!
             //let ssoToken = (rootVC.ssoTokenTextField.text == "") ? "" : rootVC.ssoTokenTextField.text!
             let amount = (rootVC.amountTextField.text == "") ? "1" : rootVC.amountTextField.text!
-            
+            let custId = (rootVC.custIdTextField.text == "") ? "cid" : rootVC.custIdTextField.text!
+
             let bodyParams = """
             {
             "paytmSsoToken": ssoToken,
@@ -304,7 +335,7 @@ class NewCardViewController: BaseViewController {
             "currency":"INR"
             },
             "userInfo": {
-            "custId":"cid"
+            "custId":"\(custId)"
             },
             "callbackUrl":"https://securegw.paytm.in/theia/paytmCallback?ORDER_ID=\(orderId)&MID=\(merchantId)"
             }

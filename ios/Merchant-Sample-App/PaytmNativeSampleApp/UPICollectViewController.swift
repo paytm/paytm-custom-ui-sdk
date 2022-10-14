@@ -20,6 +20,7 @@ class UPICollectViewController: BaseViewController {
     
     //MARK: IBOutlets
     @IBOutlet weak var vpaAddressTextField: UITextField!
+    @IBOutlet weak var upiNumberTextField: UITextField!
     @IBOutlet weak var switchSaveInstrument: UISwitch!
     @IBOutlet weak var pollingSwitch: UISwitch!
     
@@ -36,6 +37,7 @@ class UPICollectViewController: BaseViewController {
     }
     
     let referenceId = "ref_98765432151017"
+    var verifiedVpaAddress: String?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -52,11 +54,20 @@ class UPICollectViewController: BaseViewController {
     }
     
     @IBAction func tapOnVerifyVPA(_ sender: UIButton) {
-        guard let vpaAddress = vpaAddressTextField.text, !vpaAddress.isEmpty else {
+        guard let vpa = vpaAddressTextField.text, !vpa.isEmpty else {
             self.showError(errorString: "vpaAddress is required.")
             return
         }
-        validateVPA(vpaAddress: vpaAddress)
+        verifiedVpaAddress = vpa
+        validateVPA(vpaAddress: verifiedVpaAddress)
+    }
+    
+    @IBAction func tapOnVerifyUpiNumber(_ sender: UIButton) {
+        guard let upiNumber = upiNumberTextField.text, !upiNumber.isEmpty else {
+            self.showError(errorString: "numeric id is required.")
+            return
+        }
+        validateVPA(upiNumber: upiNumber)
     }
     
     @IBAction func accessTokenSwitchAction(_ sender: UISwitch) {
@@ -80,7 +91,7 @@ class UPICollectViewController: BaseViewController {
     }
     
     
-    func validateVPA(vpaAddress: String) {
+    func validateVPA(vpaAddress: String? = "", upiNumber: String? = "") {
         if let childVC = self.children.first as? UINavigationController, let rootVC = childVC.viewControllers.first as? ViewController {
             let merchantId = (rootVC.merchantIdTextField.text == "") ? "AliSub58582630351896" : rootVC.merchantIdTextField.text!
             let baseUrlString = (self.appInvoke.getEnvironent() == .production) ? kProduction_ServerURL : kStaging_ServerURL
@@ -124,12 +135,16 @@ class UPICollectViewController: BaseViewController {
                                 print(jsonDict)
                                 if let body = jsonDict["body"] as? [String : Any], let accessToken = body["accessToken"] as? String {
                                     DispatchQueue.main.async {
-                                        self.appInvoke.isVpaValidated(vpa: vpaAddress, mid: merchantId, tokenType: .acccess, token: accessToken, referenceId: self.referenceId) { (response, error) in
+                                        self.appInvoke.isVpaValidated(vpa: vpaAddress, upiNumber: upiNumber, mid: merchantId, tokenType: .acccess, token: accessToken, referenceId: self.referenceId) { (response, error) in
                                             if error != nil {
                                                 let alert = UIAlertController(title: "Fail", message: (response?.isEmpty ?? false) ? (error ?? nil) : String(describing: response), preferredStyle: .alert)
                                                 alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
                                                 self.present(alert, animated: true, completion: nil)
                                             } else {
+                                                if let vpa = body["vpa"] as? String {
+                                                    self.verifiedVpaAddress = vpa
+                                                    print(vpa)
+                                                }
                                                 let alert = UIAlertController(title: "Success", message:  (response?.isEmpty ?? false) ? (error ?? nil) : String(describing: response), preferredStyle: .alert)
                                                 alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
                                                 self.present(alert, animated: true, completion: nil)
@@ -154,7 +169,7 @@ class UPICollectViewController: BaseViewController {
             } else {
                 rootVC.initiateTransitionToken { (orderId, merchantId, txnToken, token) in
                     DispatchQueue.main.async {
-                        self.appInvoke.isVpaValidated(vpa: vpaAddress, mid: merchantId, tokenType: .txntoken, token: txnToken, referenceId: orderId) { (response, error) in
+                        self.appInvoke.isVpaValidated(vpa: vpaAddress, upiNumber: upiNumber, mid: merchantId, tokenType: .txntoken, token: txnToken, referenceId: orderId) { (response, error) in
                             if error != nil {
                                 let alert = UIAlertController(title: "Fail", message: (response?.isEmpty ?? false) ? (error ?? nil) : String(describing: response), preferredStyle: .alert)
                                 alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
@@ -163,6 +178,9 @@ class UPICollectViewController: BaseViewController {
                                 let alert = UIAlertController(title: "Success", message:  (response?.isEmpty ?? false) ? (error ?? nil) : String(describing: response), preferredStyle: .alert)
                                 alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
                                 self.present(alert, animated: true, completion: nil)
+                                if let response = response, let body = response["body"] as? [String : Any], let vpa = body["vpa"] as? String {
+                                    self.verifiedVpaAddress = vpa
+                                }
                                 print(response)
                             }
                         }
@@ -177,8 +195,10 @@ class UPICollectViewController: BaseViewController {
     func getParamsForSavedLocalVault() -> [String: Any] {
         if let childVC = self.children.first as? UINavigationController, let rootVC = childVC.viewControllers.first as? ViewController {
             var bodyParams = [String: Any]()
-            bodyParams["CUSTID"] = "CUST001"
-            bodyParams["MID"] = (rootVC.merchantIdTextField.text == "") ? "AliSub58582630351896" : rootVC.merchantIdTextField.text!
+            let custId = (rootVC.custIdTextField.text == "") ? "CUST001" : rootVC.custIdTextField.text!
+            bodyParams["CUSTID"] = custId
+            
+            bodyParams["MID"] = (rootVC.merchantIdTextField.text == "") ? "SUBALI28053589241419" : rootVC.merchantIdTextField.text!
             
             if !(rootVC.ssoTokenTextField.text ?? "").isEmpty {
                 bodyParams["SSO_TOKEN"] = (rootVC.ssoTokenTextField.text == "") ? "" : rootVC.ssoTokenTextField.text!
@@ -195,7 +215,7 @@ class UPICollectViewController: BaseViewController {
     
     override func hitInitiateTransactionAPI(_ env: AIEnvironment) {
         if let childVC = self.children.first as? UINavigationController, let rootVC = childVC.viewControllers.first as? ViewController {
-            guard let vpaAddress = vpaAddressTextField.text, !vpaAddress.isEmpty else {
+            guard let vpaAddress = verifiedVpaAddress, !vpaAddress.isEmpty else {
                 self.showError(errorString: "vpaAddress is required.")
                 return
             }
@@ -206,6 +226,8 @@ class UPICollectViewController: BaseViewController {
                 self.appInvoke.saveVPA(vpa: vpaAddress)
             }
 
+            let urlScheme = (rootVC.urlSchemeTextField.text == "") ? "" : rootVC.urlSchemeTextField.text!
+
             let flowType: AINativePaymentFlow = AINativePaymentFlow(rawValue: (rootVC.flowTypeSegment.titleForSegment(at: rootVC.flowTypeSegment.selectedSegmentIndex) ?? "NONE")) ?? .none
             let baseUrlString = (env == .production) ? kProduction_ServerURL : kStaging_ServerURL
             
@@ -215,7 +237,7 @@ class UPICollectViewController: BaseViewController {
             }
 
             rootVC.initiateTransitionToken { (orderId, merchantId, txnToken, ssoToken) in
-                let model = AINativeNUPIarameterModel.init(withTransactionToken: txnToken, orderId: orderId, shouldOpenNativePlusFlow: true, mid: merchantId, flowType: flowType, amount: amount, paymentModes: .upi, vpaAddress: vpaAddress, upiFlowType: .collect, merchantInfo: nil, bankDetail: nil, redirectionUrl: "\(baseUrlString)/theia/paytmCallback")
+                let model = AINativeNUPIarameterModel.init(withTransactionToken: txnToken, orderId: orderId, shouldOpenNativePlusFlow: true, mid: merchantId, flowType: flowType, amount: amount, paymentModes: .upi, vpaAddress: vpaAddress, upiFlowType: .collect, merchantInfo: nil, bankDetail: nil, redirectionUrl: "\(baseUrlString)/theia/paytmCallback", urlScheme: urlScheme)
                 
                 //collcect flow for UPI transaction.
                 //flexible polling handling  using public init UpiCollectConfigurations

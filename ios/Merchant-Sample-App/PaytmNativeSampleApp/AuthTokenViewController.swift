@@ -23,7 +23,8 @@ class AuthTokenViewController: BaseViewController {
         if let childVC = self.children.first as? UINavigationController, let rootVC = childVC.viewControllers.first as? ViewController {
             let merchantId = (rootVC.merchantIdTextField.text == "") ? "AliSub58582630351896" : rootVC.merchantIdTextField.text!
             let clientId = (rootVC.clientIdTextField.text == "") ? "pg-mid-test-prod" : rootVC.clientIdTextField.text!
-            self.appInvoke.getAuthToken(clientId: clientId, mid: merchantId) { (status) in
+            let urlScheme = (rootVC.urlSchemeTextField.text == "") ? "" : rootVC.urlSchemeTextField.text!
+            self.appInvoke.getAuthToken(clientId: clientId, mid: merchantId, urlScheme: urlScheme) { (status) in
                 switch status {
                 case .inProcess:
                     break

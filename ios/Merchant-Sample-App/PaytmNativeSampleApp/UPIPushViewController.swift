@@ -37,6 +37,7 @@ class UPIPushViewController: BaseViewController {
             
             let flowType: AINativePaymentFlow = AINativePaymentFlow(rawValue: (rootVC.flowTypeSegment.titleForSegment(at: rootVC.flowTypeSegment.selectedSegmentIndex) ?? "NONE")) ?? .none
             let baseUrlString = (env == .production) ? kProduction_ServerURL : kStaging_ServerURL
+            let urlScheme = (rootVC.urlSchemeTextField.text == "") ? "" : rootVC.urlSchemeTextField.text!
 
             //initiatee Transaction
             rootVC.initiateTransitionToken { (orderId, merchantId, txnToken, ssoToken) in
@@ -45,7 +46,7 @@ class UPIPushViewController: BaseViewController {
                     if let floatAmount = Double(rootVC.transactionAmount) {
                         amount = CGFloat(floatAmount)
                     }
-                    
+
                     //REMARK: call upifetchPayOptions api to get upiProfile of the user
                     self.fetchPayOptions(env: env, txnToken: txnToken, orderId: orderId, mid: merchantId) {  (status) in
                         
@@ -59,7 +60,7 @@ class UPIPushViewController: BaseViewController {
                         
                         // proced paymeent through selectd bank and vpa(bankDetails and vpaAddreess) to a merchant(self.merchantDetails)
                         let upiPollingConfig =  UpiCollectConfigurations(shouldAllowCustomPolling: false, isAutoPolling: true)
-                        self.appInvoke.callProcessTransactionAPIForUPI(selectedPayModel: AINativeNUPIarameterModel.init(withTransactionToken: txnToken, orderId: orderId, shouldOpenNativePlusFlow: true, mid: merchantId, flowType: flowType, amount: amount, paymentModes: .upi, vpaAddress: self.vpaAddress, upiFlowType: .push, merchantInfo: self.merchantDetails, bankDetail: self.bankDetails), upiPollingConfig: upiPollingConfig, delegate: self, completionForPush: { (status) in
+                        self.appInvoke.callProcessTransactionAPIForUPI(selectedPayModel: AINativeNUPIarameterModel.init(withTransactionToken: txnToken, orderId: orderId, shouldOpenNativePlusFlow: true, mid: merchantId, flowType: flowType, amount: amount, paymentModes: .upi, vpaAddress: self.vpaAddress, upiFlowType: .push, merchantInfo: self.merchantDetails, bankDetail: self.bankDetails, urlScheme: urlScheme), upiPollingConfig: upiPollingConfig, delegate: self, completionForPush: { (status) in
                             
                             switch status {
                             case .appNotInstall:

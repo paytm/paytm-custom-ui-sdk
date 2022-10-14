@@ -41,7 +41,8 @@ class WalletViewController: BaseViewController {
             
             let flowType: AINativePaymentFlow = AINativePaymentFlow(rawValue: (rootVC.flowTypeSegment.titleForSegment(at: rootVC.flowTypeSegment.selectedSegmentIndex) ?? "NONE")) ?? .none
             let baseUrlString = (env == .production) ? kProduction_ServerURL : kStaging_ServerURL
-            
+            let urlScheme = (rootVC.urlSchemeTextField.text == "") ? "" : rootVC.urlSchemeTextField.text!
+
             
             //initiatee Transaction
             rootVC.initiateTransitionToken { [weak self](orderId, merchantId, txnToken, ssoToken) in
@@ -52,7 +53,7 @@ class WalletViewController: BaseViewController {
                 DispatchQueue.main.async {
                     let transactionAmount = rootVC.transactionAmount
                     
-                    let selectedPayModel = AINativeInhouseParameterModel.init(withTransactionToken: txnToken, orderId: orderId, shouldOpenNativePlusFlow: true, mid: merchantId, flowType: flowType, paymentModes: .wallet, redirectionUrl: "\(baseUrlString)/theia/paytmCallback")
+                    let selectedPayModel = AINativeInhouseParameterModel.init(withTransactionToken: txnToken, orderId: orderId, shouldOpenNativePlusFlow: true, mid: merchantId, flowType: flowType, paymentModes: .wallet, redirectionUrl: "\(baseUrlString)/theia/paytmCallback", urlScheme: urlScheme)
                     guard !self.shouldAppInvoke else {
                         self.appInvoke.openPaytm(selectedPayModel: selectedPayModel, merchantId: merchantId, orderId: orderId, txnToken: txnToken, amount: transactionAmount, callbackUrl: "", delegate: self, environment: env)
                         return
@@ -64,7 +65,10 @@ class WalletViewController: BaseViewController {
                             self.appInvoke.callProcessTransactionAPI(selectedPayModel: selectedPayModel, delegate: self)
                             
                         } else {
-                            self.showError(errorString: "something went wrong")
+                            DispatchQueue.main.async {
+                                self.showError(errorString: "something went wrong")
+                            }
+                            
                         }
                         
                     }

@@ -17,10 +17,12 @@ class ViewController: UIViewController {
     @IBOutlet weak var orderIdTextField: UITextField!
     @IBOutlet weak var ssoTokenTextField: UITextField!
     @IBOutlet weak var amountTextField: UITextField!
+    @IBOutlet weak var urlSchemeTextField: UITextField!
     @IBOutlet weak var checksumField: UITextField!
     @IBOutlet weak var clientIdTextField: UITextField!
     @IBOutlet weak var flowTypeSegment: UISegmentedControl!
-    
+    @IBOutlet weak var custIdTextField: UITextField!
+
     //MARK: Private Properties
     var transactionAmount: String = ""
     
@@ -72,6 +74,8 @@ class ViewController: UIViewController {
             let amount = (self.amountTextField.text == "") ? "1" : self.amountTextField.text!
             let token = (self.ssoTokenTextField.text == "") ? "" : self.ssoTokenTextField.text!
             let clientId = (self.clientIdTextField.text == "") ? "pg-mid-test-prod" : self.clientIdTextField.text!
+            let custId = (self.custIdTextField.text == "") ? "cid" : self.custIdTextField.text!
+
             //let flowType: AINativePaymentFlow = AINativePaymentFlow(rawValue: (rootVC.flowTypeSegment.titleForSegment(at: rootVC.flowTypeSegment.selectedSegmentIndex) ?? "NONE")) ?? .none
             
             let baseUrlString = (self.appInvoke.getEnvironent() == .production) ? kProduction_ServerURL : kStaging_ServerURL
@@ -80,11 +84,11 @@ class ViewController: UIViewController {
             var checksum = "CH"
            self.transactionAmount = amount
         
-        self.generateChecksum(orderId: orderId) { (Checksum) in
-            checksum = Checksum ?? ""
-            print(checksum)
-        }
-        let bodyParams = ["head": ["channelId":"WAP","clientId":clientId, "requestTimestamp":"Time","signature": "CH","version":"v1"],"body":["callbackUrl":"\(baseUrlString)/theia/paytmCallback?ORDER_ID=\(orderId)&MID=\(merchantId)","mid":"\(merchantId)","orderId":"\(orderId)","requestType":"Payment","websiteName":"retail","paytmSsoToken":"\(token)","txnAmount":["value":"\(amount)","currency":"INR"],"userInfo":["custId":"cid"]]]
+//        self.generateChecksum(orderId: orderId) { (Checksum) in
+//            checksum = Checksum ?? ""
+//            print(checksum)
+//        }
+        let bodyParams = ["head": ["channelId":"WAP","clientId":clientId, "requestTimestamp":"Time","signature": "CH","version":"v1"],"body":["callbackUrl":"\(baseUrlString)/theia/paytmCallback?ORDER_ID=\(orderId)&MID=\(merchantId)","mid":"\(merchantId)","orderId":"\(orderId)","requestType":"Payment","websiteName":"retail","paytmSsoToken":"\(token)","txnAmount":["value":"\(amount)","currency":"INR"],"userInfo":["custId":custId]]]
             do {
                 let data = try JSONSerialization.data(withJSONObject: bodyParams, options: .prettyPrinted)
                 request.httpBody = data
@@ -165,7 +169,8 @@ class ViewController: UIViewController {
     func generateChecksum(orderId: String, completion: @escaping ((String?)->())) {
         let merchantId = (self.merchantIdTextField.text == "") ? "AliSub58582630351896" : self.merchantIdTextField.text!
         let amount = (self.amountTextField.text == "") ? "1" : self.amountTextField.text!
-        
+        let custId = (self.custIdTextField.text == "") ? "cid" : self.custIdTextField.text!
+
         let bodyParams = """
         {
             "requestType":"NATIVE",
@@ -177,7 +182,7 @@ class ViewController: UIViewController {
                 "currency":"INR"
             },
             "userInfo": {
-                "custId":"cid"
+                "custId": "\(custId)"
             },
             "callbackUrl":"https://stage-webapp.paytm.in/callback.php"
         }
@@ -281,10 +286,12 @@ extension ViewController {
         let merchantId = (self.merchantIdTextField.text == "") ? "AliSub58582630351896" : self.merchantIdTextField.text!
         let amount = (self.amountTextField.text == "") ? "1" : self.amountTextField.text!
         let token = (self.ssoTokenTextField.text == "") ? "" : self.ssoTokenTextField.text!
+        let custId = (self.custIdTextField.text == "") ? "cid" : self.custIdTextField.text!
+        let urlScheme = (self.urlSchemeTextField.text == "") ? "" : self.urlSchemeTextField.text!
 
         var request = URLRequest(url: URL(string: "https://securegw.paytm.in/theia/api/v1/initiateTransaction?mid=\(merchantId)&orderId=\(orderId)")!)
         
-        let bodyParams = ["head": ["channelId":"WAP","clientId":"pg-mid-test-prod","requestTimestamp":"Time","signature":"CH","version":"v1"],"body":["callbackUrl":"https://securegw.paytm.in/theia/paytmCallback?ORDER_ID=\(orderId)&MID=\(merchantId)","mid":"\(merchantId)","orderId":"\(orderId)","requestType":"Payment","websiteName":"retail","paytmSsoToken":"\(token)","txnAmount":["value":"\(amount)","currency":"INR"],"userInfo":["custId":"cid"]]]
+        let bodyParams = ["head": ["channelId":"WAP","clientId":"pg-mid-test-prod","requestTimestamp":"Time","signature":"CH","version":"v1"],"body":["callbackUrl":"https://securegw.paytm.in/theia/paytmCallback?ORDER_ID=\(orderId)&MID=\(merchantId)","mid":"\(merchantId)","orderId":"\(orderId)","requestType":"Payment","websiteName":"retail","paytmSsoToken":"\(token)","txnAmount":["value":"\(amount)","currency":"INR"],"userInfo":["custId": custId]]]
         do {
             let data = try JSONSerialization.data(withJSONObject: bodyParams, options: .prettyPrinted)
             request.httpBody = data
@@ -305,7 +312,7 @@ extension ViewController {
                     if let body = jsonDict["body"] as? [String : Any], let txnToken =  body["txnToken"] as? String {
                         DispatchQueue.main.async {
                             
-                            self.appInvoke.callProcessTransactionAPI(selectedPayModel: AINativeInhouseParameterModel.init(withTransactionToken: txnToken, orderId: orderId, shouldOpenNativePlusFlow: true, mid: merchantId, flowType: .none, paymentModes: .wallet, redirectionUrl: "https://securegw.paytm.in/theia/paytmCallback"), delegate: self)
+                            self.appInvoke.callProcessTransactionAPI(selectedPayModel: AINativeInhouseParameterModel.init(withTransactionToken: txnToken, orderId: orderId, shouldOpenNativePlusFlow: true, mid: merchantId, flowType: .none, paymentModes: .wallet, redirectionUrl: "https://securegw.paytm.in/theia/paytmCallback", urlScheme: urlScheme), delegate: self)
                         }
                     }
                 }

@@ -57,6 +57,8 @@ class NBViewController: BaseViewController {
             let merchantId = (rootVC.merchantIdTextField.text == "") ? "AliSub58582630351896" : rootVC.merchantIdTextField.text!
             let amount = (rootVC.amountTextField.text == "") ? "1" : rootVC.amountTextField.text!
             let token = (rootVC.ssoTokenTextField.text == "") ? "" : rootVC.ssoTokenTextField.text!
+            let urlScheme = (rootVC.urlSchemeTextField.text == "") ? "" : rootVC.urlSchemeTextField.text!
+
             let flowType: AINativePaymentFlow = AINativePaymentFlow(rawValue: (rootVC.flowTypeSegment.titleForSegment(at: rootVC.flowTypeSegment.selectedSegmentIndex) ?? "NONE")) ?? .none
             let clientId = (rootVC.clientIdTextField.text == "") ? "pg-mid-test-prod" : rootVC.clientIdTextField.text!
 
@@ -90,7 +92,7 @@ class NBViewController: BaseViewController {
                                 if let body = jsonDict["body"] as? [String : Any], let accessToken = body["accessToken"] as? String {
                                     DispatchQueue.main.async {
                                         self.selectedModel =
-                                            AINativeNBParameterModel.init(withTransactionToken: accessToken, tokenType: TokenType.acccess, orderId: orderId, shouldOpenNativePlusFlow: true, mid: merchantId, flowType: flowType, paymentModes: .netBanking, channelCode: "", redirectionUrl: "\(baseUrlString)/theia/paytmCallback",reference_Id: "REF_1599222064")
+                                            AINativeNBParameterModel.init(withTransactionToken: accessToken, tokenType: TokenType.acccess, orderId: orderId, shouldOpenNativePlusFlow: true, mid: merchantId, flowType: flowType, paymentModes: .netBanking, channelCode: "", redirectionUrl: "\(baseUrlString)/theia/paytmCallback",reference_Id: "REF_1599222064", urlScheme: urlScheme)
                                         
                                         //fetch netbankingChannels with access token
                                         self.appInvoke.fetchNetBankingChannels(selectedPayModel: self.selectedModel!, delegate: self)
@@ -131,8 +133,9 @@ class NBViewController: BaseViewController {
             else{
                 let urlString = "\(baseUrlString)/theia/api/v1/initiateTransaction?mid=\(merchantId)&orderId=\(orderId)"
                 var request = URLRequest(url: URL(string: urlString)!)
+                let custId = (rootVC.custIdTextField.text == "") ? "cid" : rootVC.custIdTextField.text!
 
-                let bodyParams = ["head": ["channelId":"WAP","clientId":clientId, "requestTimestamp":"Time","signature":"CH","version":"v1"],"body":["callbackUrl":"\(baseUrlString)/theia/paytmCallback?ORDER_ID=\(orderId)&MID=\(merchantId)","mid":"\(merchantId)","orderId":"\(orderId)","requestType":"Payment","websiteName":"retail","paytmSsoToken": "\(token)","txnAmount":["value":"\(amount)","currency":"INR"],"userInfo":["custId":"cid"]]]
+                let bodyParams = ["head": ["channelId":"WAP","clientId":clientId, "requestTimestamp":"Time","signature":"CH","version":"v1"],"body":["callbackUrl":"\(baseUrlString)/theia/paytmCallback?ORDER_ID=\(orderId)&MID=\(merchantId)","mid":"\(merchantId)","orderId":"\(orderId)","requestType":"Payment","websiteName":"retail","paytmSsoToken": "\(token)","txnAmount":["value":"\(amount)","currency":"INR"],"userInfo":["custId":custId]]]
                 
                 do {
                     let data = try JSONSerialization.data(withJSONObject: bodyParams, options: .prettyPrinted)
@@ -181,13 +184,14 @@ class NBViewController: BaseViewController {
             let amount = (rootVC.amountTextField.text == "") ? "1" : rootVC.amountTextField.text!
             let token = (rootVC.ssoTokenTextField.text == "") ? "" : rootVC.ssoTokenTextField.text!
             let flowType: AINativePaymentFlow = AINativePaymentFlow(rawValue: (rootVC.flowTypeSegment.titleForSegment(at: rootVC.flowTypeSegment.selectedSegmentIndex) ?? "NONE")) ?? .none
+            let custId = (rootVC.custIdTextField.text == "") ? "cid" : rootVC.custIdTextField.text!
 
 
             let baseUrlString = (env == .production) ? kProduction_ServerURL : kStaging_ServerURL
             let urlString = "\(baseUrlString)/theia/api/v1/initiateTransaction?mid=\(merchantId)&orderId=\(orderId)"
             var request = URLRequest(url: URL(string: urlString)!)
             
-            let bodyParams = ["head": ["channelId":"WAP","clientId":"pg-mid-test-prod", "requestTimestamp":"Time","signature":"CH","version":"v1"],"body":["callbackUrl":"\(baseUrlString)/theia/paytmCallback?ORDER_ID=\(orderId)&MID=\(merchantId)","mid":"\(merchantId)","orderId":"\(orderId)","requestType":"Payment","websiteName":"retail","paytmSsoToken":"\(token)","txnAmount":["value":"\(amount)","currency":"INR"],"userInfo":["custId":"cid"]]]
+            let bodyParams = ["head": ["channelId":"WAP","clientId":"pg-mid-test-prod", "requestTimestamp":"Time","signature":"CH","version":"v1"],"body":["callbackUrl":"\(baseUrlString)/theia/paytmCallback?ORDER_ID=\(orderId)&MID=\(merchantId)","mid":"\(merchantId)","orderId":"\(orderId)","requestType":"Payment","websiteName":"retail","paytmSsoToken":"\(token)","txnAmount":["value":"\(amount)","currency":"INR"],"userInfo":["custId":custId]]]
             
             do {
                 let data = try JSONSerialization.data(withJSONObject: bodyParams, options: .prettyPrinted)
