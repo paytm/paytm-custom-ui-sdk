@@ -19,7 +19,7 @@ public class IsDisabled implements BaseDataModel {
     private String msg;
 
 
-    private Map<String, Object> additionalProperties = new HashMap<String, Object>();
+    private final Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     public Map<String, Object> getAdditionalProperties() {
         return this.additionalProperties;

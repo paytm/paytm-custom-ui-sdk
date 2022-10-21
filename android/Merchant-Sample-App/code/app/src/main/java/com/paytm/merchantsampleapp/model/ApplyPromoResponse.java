@@ -180,7 +180,7 @@ public class ApplyPromoResponse implements net.one97.paytm.nativesdk.common.mode
         }
 
         public boolean isPromoVisible(){
-            return !TextUtils.isEmpty(promoVisibility) && "true".equalsIgnoreCase(promoVisibility.toLowerCase());
+            return !TextUtils.isEmpty(promoVisibility) && "true".equalsIgnoreCase(promoVisibility);
         }
     }
 }

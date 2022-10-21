@@ -13,8 +13,7 @@
         style="@style/textViewLight"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Enter Saved card id"
-        android:inputType="number" />
+        android:hint="Enter Saved card id"/>
 
     <EditText
         android:id="@+id/saved_card_cvv"
@@ -56,6 +55,23 @@
             android:layout_height="wrap_content"
             android:text="PIN" />
     </RadioGroup>
+
+    <CheckBox
+        android:id="@+id/cb_get_ptc"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/dimen_16dp"
+        android:text="Merchant Powered Bank Pages"/>
+
+    <CheckBox
+        android:id="@+id/cbUserConsent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/dimen_12dp"
+        android:layout_marginStart="@dimen/dimen_16dp"
+        android:layout_marginEnd="@dimen/dimen_16dp"
+        android:text="User Consent"
+        />
 
     <Button
         android:id="@+id/proceed_saved_card"

@@ -10,7 +10,7 @@ public class HasLowSuccess implements BaseDataModel {
 
     private boolean status;
     private String msg;
-    private Map<String, Object> additionalProperties = new HashMap<String, Object>();
+    private final Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     public HasLowSuccess(boolean status, String msg) {
         this.status = status;

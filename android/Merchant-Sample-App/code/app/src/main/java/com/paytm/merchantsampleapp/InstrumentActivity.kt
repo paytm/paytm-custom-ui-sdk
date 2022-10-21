@@ -21,28 +21,33 @@ import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import com.android.volley.VolleyError
 import com.google.gson.Gson
-import com.paytm.merchantsampleapp.model.BinDetail
-import com.paytm.merchantsampleapp.model.PaymentModes
-import com.paytm.merchantsampleapp.model.VpaAccountDetail
-import com.paytm.merchantsampleapp.model.VpaBankAccountDetail
+import com.paytm.merchantsampleapp.model.*
 import kotlinx.android.synthetic.main.activity_instruments.*
+import kotlinx.android.synthetic.main.activity_instruments.fetch_nb_channels
 import kotlinx.android.synthetic.main.instrument_card.*
 import kotlinx.android.synthetic.main.instrument_nb.*
+import kotlinx.android.synthetic.main.instrument_tokenized_card.*
 import kotlinx.android.synthetic.main.instrument_upi.*
 import kotlinx.android.synthetic.main.saved_card_view.*
 import net.one97.paytm.nativesdk.PaytmSDK
 import net.one97.paytm.nativesdk.Utils.PayMethodType
 import net.one97.paytm.nativesdk.Utils.Server
+import net.one97.paytm.nativesdk.app.CardProcessTransactionListener
+import net.one97.paytm.nativesdk.app.CheckLoggedInUserMatchListener
 import net.one97.paytm.nativesdk.app.PaytmSDKCallbackListener
 import net.one97.paytm.nativesdk.common.widget.PaytmConsentCheckBox
 import net.one97.paytm.nativesdk.dataSource.PaymentsDataImpl
 import net.one97.paytm.nativesdk.dataSource.models.*
 import net.one97.paytm.nativesdk.instruments.upicollect.models.UpiOptionsModel
 import net.one97.paytm.nativesdk.paymethods.datasource.PaymentMethodDataSource
+import net.one97.paytm.nativesdk.paymethods.model.processtransaction.ProcessTransactionInfo
 import net.one97.paytm.nativesdk.transcation.model.TransactionInfo
 import org.json.JSONObject
+import java.nio.charset.Charset
+import java.security.MessageDigest
+import java.security.NoSuchAlgorithmException
 
-class InstrumentActivity : AppCompatActivity(), View.OnClickListener, PaytmSDKCallbackListener {
+class InstrumentActivity : AppCompatActivity(), View.OnClickListener, CardProcessTransactionListener {
 
     /*
     * Please read readme file before starting
@@ -63,6 +68,7 @@ class InstrumentActivity : AppCompatActivity(), View.OnClickListener, PaytmSDKCa
     private var upiAppsInstalled: ArrayList<UpiOptionsModel>? = null
 
     private lateinit var mid: String
+    private lateinit var orderid: String
     private lateinit var txnToken: String
     private var pd: AlertDialog? = null
 
@@ -125,7 +131,7 @@ class InstrumentActivity : AppCompatActivity(), View.OnClickListener, PaytmSDKCa
     // Creating paytmSDK instance to fetch allowed options and details
     private fun initPaytmSDK() {
         mid = intent.getStringExtra("mid") ?: ""
-        val orderId = intent.getStringExtra("orderId")
+        orderid = intent.getStringExtra("orderId")
         amount = intent.getStringExtra("amount") ?: "0"
         txnToken = intent.getStringExtra("txnToken") ?: ""
         val isStaging = intent.getBooleanExtra("isStaging",false)
@@ -134,7 +140,7 @@ class InstrumentActivity : AppCompatActivity(), View.OnClickListener, PaytmSDKCa
             PaytmSDK.Builder(
                 this,
                 mid,
-                orderId,
+                orderid,
                 txnToken,
                 java.lang.Double.parseDouble(amount),
                 this
@@ -154,6 +160,7 @@ class InstrumentActivity : AppCompatActivity(), View.OnClickListener, PaytmSDKCa
 
     private fun init() {
         saved_instrument.setOnClickListener(this)
+        proceed_tokenized_card.setOnClickListener(this)
         fetch_nb_channels.setOnClickListener(this)
         proceed_card.setOnClickListener(this)
         proceed_saved_card.setOnClickListener(this)
@@ -164,6 +171,9 @@ class InstrumentActivity : AppCompatActivity(), View.OnClickListener, PaytmSDKCa
         action_emi_details.setOnClickListener(this)
         saved_nb.setOnClickListener(this)
         saved_vpa_upi_collect.setOnClickListener(this)
+        btn_check_match.setOnClickListener(this)
+        tvValidateVPA.setOnClickListener(this)
+
 
         add_money_wallet.setOnClickListener(this)
 
@@ -181,6 +191,8 @@ class InstrumentActivity : AppCompatActivity(), View.OnClickListener, PaytmSDKCa
 
         card_type_view.setOnClickListener { card_container.toggleVisibility() }
         saved_card_type_view.setOnClickListener { card1_container.toggleVisibility() }
+        tokenized_card_type_view.setOnClickListener { card2_container.toggleVisibility()}
+
 
         setUpCardSpinner()
     }
@@ -254,6 +266,10 @@ class InstrumentActivity : AppCompatActivity(), View.OnClickListener, PaytmSDKCa
 
     override fun onClick(v: View?) {
         when (v?.id) {
+            R.id.btn_check_match -> {
+                checkIFUserMatches(et_mobile_no.text?.toString())
+            }
+
             R.id.saved_instrument -> {
                 fetchIfSavedInstruments()
             }
@@ -292,7 +308,7 @@ class InstrumentActivity : AppCompatActivity(), View.OnClickListener, PaytmSDKCa
                     UpiDataRequestModel(vpaDetail?.name!!, vpaDetailString!!)
                 paytmSDK?.fetchUpiBalance(this, upiDataRequestModel)
             }
-            R.id.proceed_card, R.id.proceed_saved_card, R.id.proceed_nb, R.id.proceed_upi -> {
+            R.id.proceed_card, R.id.proceed_saved_card, R.id.proceed_nb, R.id.proceed_upi, R.id.proceed_tokenized_card -> {
                 startTransaction(v.id)
             }
             R.id.action_emi_details -> {
@@ -321,6 +337,29 @@ class InstrumentActivity : AppCompatActivity(), View.OnClickListener, PaytmSDKCa
             }
             R.id.add_money_wallet -> {
                 paytmSDK?.openPaytmAppForAddMoneyToWallet(this)
+            }
+            R.id.tvValidateVPA -> {
+                val vpa = validateVpaText.text?.toString()
+                val vpaAddress = if(cbIsNumeric.isChecked) null else vpa
+                val numericId = if(cbIsNumeric.isChecked) vpa else null
+                PaymentsDataImpl.validateVPA(
+                    vpaAddress,
+                    mid, "TXN_TOKEN", txnToken, orderid, object : PaymentMethodDataSource.Callback<VPAValidateResponse> {
+                        override fun onResponse(response: VPAValidateResponse?) {
+                            if (response?.isValid == true) {
+                                if(cbIsNumeric.isChecked && response.vpa != null) {
+                                    Toast.makeText(applicationContext, "vpa : " + response.vpa, Toast.LENGTH_SHORT).show()
+                                }
+                                Toast.makeText(applicationContext, "VPA Validated", Toast.LENGTH_SHORT).show()
+                            } else {
+                                Toast.makeText(applicationContext, "VPA Not Validated " + response?.resultMsg, Toast.LENGTH_SHORT).show()
+                            }
+                        }
+
+                        override fun onErrorResponse(error: VolleyError?, errorInfo: VPAValidateResponse?) {
+                            Toast.makeText(applicationContext, "Error in API", Toast.LENGTH_SHORT).show()
+                        }
+                    },numericId)
             }
         }
     }
@@ -424,9 +463,58 @@ class InstrumentActivity : AppCompatActivity(), View.OnClickListener, PaytmSDKCa
         }
     }
 
+    //start tokenized card transaction
+    private fun goForTokenizedCard(){
+        val cardToken = cardToken.text?.toString()
+        val tokenExpiry = tokenExpiry.text?.toString()
+        val tavv = etTavv.text?.toString()
+
+        val cardCvv = tokenized_card_cvv.text?.toString()
+        val emiChannelId: String? = card_emichannelId?.text.toString()
+
+        val lastFourDigits = etLastFourDigits.text?.toString()
+        val par = etPar.text?.toString()
+        val channelCode = etBankCode.text?.toString()
+        val bankCode = etChannelCode.text?.toString()
+
+        val cardPayModeType: String = if (card_type.selectedItem.toString() == "Credit Card") {
+            PayMethodType.CREDIT_CARD
+        } else {
+            PayMethodType.DEBIT_CARD
+        }
+
+        val otpChecked = rg_auth_mode_card.findViewById<RadioButton>(R.id.rb_otp_card).isChecked
+        val pinChecked = rg_auth_mode_card.findViewById<RadioButton>(R.id.rb_pin_card).isChecked
+
+        var authMode = "otp"
+        if (otpChecked) {
+            authMode = "otp"
+        } else if(pinChecked) {
+            authMode = "pin"
+        }
+
+        paymentMode = cardPayModeType
+        val cardRequestModel = TokenizedCardRequestModel(
+            paymentMode,
+            AppRepo.cjPayMethodResponse?.body?.paymentFlow!!,
+            cardToken!!,
+            tokenExpiry!!,
+            tavv!!,
+            lastFourDigits!!,
+            par!!,
+            authMode,
+            cardCvv!!,
+            emiChannelId,
+            bankCode,
+            channelCode
+        )
+        paytmSDK?.startTransaction(this, cardRequestModel)
+    }
+
     //Start new card transaction
     private fun goForNewCardTransaction(): PaymentRequestModel {
         val shouldSaveCard = cb_save_card.isChecked
+        val isMerchantPoweredBankPages = cb_get_ptc_new.isChecked
         val cardNumber = card_number.text?.toString()
         val cardCvv = card_cvv.text?.toString()
         val cardExpiry = card_expiry?.text.toString()
@@ -451,6 +539,9 @@ class InstrumentActivity : AppCompatActivity(), View.OnClickListener, PaytmSDKCa
             cardPayModeType == PayMethodType.CREDIT_CARD
         )
 
+        val isEligibleForCoFT = getBinDetail(binResponse!!)?.isEligibleForCoFT ?: false
+
+
         return CardRequestModel(
             paymentMode,
             AppRepo.cjPayMethodResponse?.body?.paymentFlow!!,
@@ -462,7 +553,10 @@ class InstrumentActivity : AppCompatActivity(), View.OnClickListener, PaytmSDKCa
             channelCode,
             authMode,
             null,
-            shouldSaveCard
+            shouldSaveCard,
+            isEligibleForCoFT,
+            true,
+            isMerchantPoweredBankPages
         )
     }
 
@@ -481,9 +575,11 @@ class InstrumentActivity : AppCompatActivity(), View.OnClickListener, PaytmSDKCa
     }
 
     private fun getBinDetail(response: JSONObject): BinDetail? {
+        var binDetail:CJPayMethodResponse
         try {
-            return Gson().fromJson(response.toString(), BinDetail::class.java)
-        } catch (e: Exception) {
+            binDetail = Gson().fromJson(response.toString(),CJPayMethodResponse::class.java)
+            return binDetail.body.binDetail
+        }catch (e: Exception){
             e.printStackTrace()
         }
         return null
@@ -512,9 +608,14 @@ class InstrumentActivity : AppCompatActivity(), View.OnClickListener, PaytmSDKCa
             authMode = "pin"
         }
 
+        val userConsentGiven = cbUserConsent.isChecked
+
         val bankDetails = getBankDetails(cardId)
         channelCode = bankDetails?.get("cardScheme")
         bankCode = bankDetails?.get("bankCode")
+
+        val isEligibleForCoFT = bankDetails?.get("isEligibleForCoFT") == "1"
+        val isMerchantPoweredBankPages = cb_get_ptc.isChecked
 
         return CardRequestModel(
             paymentMode,
@@ -527,7 +628,10 @@ class InstrumentActivity : AppCompatActivity(), View.OnClickListener, PaytmSDKCa
             channelCode,
             authMode,
             emiChannelId,
-            true
+            true,
+            isEligibleForCoFT,
+            userConsentGiven,
+            isMerchantPoweredBankPages
         )
     }
 
@@ -550,6 +654,10 @@ class InstrumentActivity : AppCompatActivity(), View.OnClickListener, PaytmSDKCa
                             nbCode
                         )
                 }
+            }
+
+            R.id.proceed_tokenized_card -> {
+                goForTokenizedCard()
             }
 
             R.id.proceed_upi -> {
@@ -579,6 +687,31 @@ class InstrumentActivity : AppCompatActivity(), View.OnClickListener, PaytmSDKCa
         }
     }
 
+    private fun checkIFUserMatches(mobilenumber: String?) {
+        getmobileSHA(mobilenumber)?.let {
+            PaytmSDK.getPaymentsUtilRepository().checkIfLoggedInUserMobNoMatched(this,it,object :
+                CheckLoggedInUserMatchListener {
+                override fun getIfUserMatched(case: Int) {
+                    showToast("User Matches case $case")
+                }
+
+            })
+        }
+    }
+
+    private fun getmobileSHA(mobilenumber: String?): String? {
+        return try {
+            if(TextUtils.isEmpty(mobilenumber)) return ""
+            val md: MessageDigest = MessageDigest.getInstance("SHA-256")
+            md.reset()
+            val hashedBytes: ByteArray = md.digest(mobilenumber?.toByteArray(Charset.forName("UTF-8")))
+            String(hashedBytes,Charset.forName("UTF-8"))
+        } catch (e: NoSuchAlgorithmException) {
+            e.printStackTrace()
+            null
+        }
+    }
+
     //fetch emi details available for card
     private fun fetchEmiDetails() {
         showDialog()
@@ -599,7 +732,7 @@ class InstrumentActivity : AppCompatActivity(), View.OnClickListener, PaytmSDKCa
                 object : PaymentMethodDataSource.Callback<JSONObject> {
                     override fun onErrorResponse(error: VolleyError?, errorInfo: JSONObject?) {
                         showToast(
-                            getMessage(errorInfo) ?: "Error fetching EMI details"
+                            getMessage(errorInfo)
                         )
                         dismissDialog()
                     }
@@ -625,6 +758,7 @@ class InstrumentActivity : AppCompatActivity(), View.OnClickListener, PaytmSDKCa
                 if (list[i].cardDetails?.cardId.equals(cardId)) {
                     result["bankCode"] = list[i].issuingBank
                     result["cardScheme"] = list[i].channelCode
+                    result["isEligibleForCoFT"] = if(list[i].isEligibleForCoFT) "1" else "0"
                 }
             }
         }
@@ -711,6 +845,7 @@ class InstrumentActivity : AppCompatActivity(), View.OnClickListener, PaytmSDKCa
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         card_type.adapter = adapter
         saved_card_type.adapter = adapter
+        tokenized_card_type.adapter = adapter
     }
 
     // read message from api reponse
@@ -761,10 +896,19 @@ class InstrumentActivity : AppCompatActivity(), View.OnClickListener, PaytmSDKCa
         finish()
     }
 
+    //get callback for merchant powered bank pages
+    override fun onCardProcessTransactionResponse(processTransactionInfo: ProcessTransactionInfo?) {
+        dismissDialog()
+        if(processTransactionInfo != null) {
+            val s = Gson().toJson(processTransactionInfo)
+            showToast(s)
+        }
+    }
+
 
     private fun getBinResponse(cardSixDigit: String) {
         PaymentsDataImpl.fetchBinDetails(
-            cardSixDigit, txnToken, "TXN_TOKEN", mid, null,
+            cardSixDigit, txnToken, "TXN_TOKEN", mid, orderid,
             object : PaymentMethodDataSource.Callback<JSONObject> {
                 override fun onResponse(response: JSONObject?) {
                     onBinResponseApi(response)

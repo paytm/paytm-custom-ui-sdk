@@ -67,6 +67,6 @@ public class PaymentOfferDetails implements BaseDataModel {
     }
 
     private boolean isPromoVisible(){
-        return !TextUtils.isEmpty(promoVisibility) && "true".equalsIgnoreCase(promoVisibility.toLowerCase());
+        return !TextUtils.isEmpty(promoVisibility) && "true".equalsIgnoreCase(promoVisibility);
     }
 }

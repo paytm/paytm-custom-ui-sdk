@@ -11,7 +11,7 @@ public class ResultInfo implements BaseDataModel {
     private String resultStatus;
     private String resultCode;
     private String resultMsg;
-    private Map<String, Object> additionalProperties = new HashMap<String, Object>();
+    private final Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
 
     public String getResultMsg() {

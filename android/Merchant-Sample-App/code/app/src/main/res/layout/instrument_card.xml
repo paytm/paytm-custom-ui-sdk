@@ -79,6 +79,13 @@
         android:layout_marginLeft="@dimen/dimen_16dp"
         android:text="Save card for future transactions"/>
 
+    <CheckBox
+        android:id="@+id/cb_get_ptc_new"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/dimen_16dp"
+        android:text="Merchant Powered Bank Pages"/>
+
     <Button
         android:id="@+id/proceed_card"
         style="@style/textViewLight"
@@ -86,13 +93,11 @@
         android:layout_height="wrap_content"
         android:background="@color/paytm_blue"
         android:text="@string/proceed" />
-
     <Button
         android:id="@+id/action_emi_details"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:padding="@dimen/dimen_8dp"
         android:background="@color/white_b8c2cb"
         android:text="@string/fetch_emi_details" />
 

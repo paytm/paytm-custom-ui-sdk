@@ -16,8 +16,8 @@ import java.util.List;
 
 public class UpiAppListAdapter extends RecyclerView.Adapter<UpiAppListAdapter.UpiAppItemHolder> {
 
-    private List<UpiOptionsModel> appList;
-    private OnClickUpiApp onClickUpiApp;
+    private final List<UpiOptionsModel> appList;
+    private final OnClickUpiApp onClickUpiApp;
     private int selectedPosition = 0;
 
     public UpiAppListAdapter(List<UpiOptionsModel> appList, OnClickUpiApp onClickUpiApp){
@@ -93,10 +93,10 @@ public class UpiAppListAdapter extends RecyclerView.Adapter<UpiAppListAdapter.Up
 
     public static class UpiAppItemHolder extends RecyclerView.ViewHolder{
 
-        private ImageView appIcon;
-        private TextView tvAppName;
-        private ImageView ivSelected;
-        private FrameLayout frameBg;
+        private final ImageView appIcon;
+        private final TextView tvAppName;
+        private final ImageView ivSelected;
+        private final FrameLayout frameBg;
 
         public UpiAppItemHolder(View itemView) {
             super(itemView);

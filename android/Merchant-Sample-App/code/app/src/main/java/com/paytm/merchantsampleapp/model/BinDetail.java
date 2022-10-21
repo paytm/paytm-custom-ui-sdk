@@ -60,7 +60,11 @@ public class BinDetail implements BaseDataModel {
 
     private String isIndian;
 
+    @SerializedName("oneClickSupported")
+    @Expose
     private boolean oneClickSupported;
+
+    private boolean isEligibleForCoft;
 
     public String getIssuingBankCode() {
         return issuingBankCode;
@@ -73,5 +77,10 @@ public class BinDetail implements BaseDataModel {
     public String getChannelCode() {
         return channelCode;
     }
+
     public boolean isOneClickSupported() { return oneClickSupported; }
+
+    public boolean isEligibleForCoFT() {
+        return isEligibleForCoft;
+    }
 }

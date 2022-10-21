@@ -187,7 +187,7 @@ public class Body implements BaseDataModel {
     }
 
     public boolean isWalletOnly() {
-        return walletOnly == null ? false : walletOnly;
+        return walletOnly != null && walletOnly;
     }
 
     public String getIconBaseUrl() {

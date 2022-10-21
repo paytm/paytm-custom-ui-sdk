@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/card2_container"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:visibility="visible"
+    tools:visibility="visible">
+
+    <EditText
+        android:id="@+id/cardToken"
+        style="@style/textViewLight"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter Card Token"/>
+
+    <EditText
+        android:id="@+id/tokenExpiry"
+        style="@style/textViewLight"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter Token Expiry (MMYYYY)"/>
+
+    <EditText
+        android:id="@+id/etTavv"
+        style="@style/textViewLight"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter TAVV"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_weight="2">
+
+        <EditText
+            android:id="@+id/tokenized_card_cvv"
+            style="@style/textViewLight"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Cvv"
+            android:inputType="number"
+            android:layout_weight="1" />
+
+        <EditText
+            android:id="@+id/etLastFourDigits"
+            style="@style/textViewLight"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Enter Last Four Digits"
+            android:layout_weight="1" />
+    </LinearLayout>
+
+    <Spinner
+        android:id="@+id/tokenized_card_type"
+        style="@style/textViewLight"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+
+    <EditText
+        android:id="@+id/etPar"
+        style="@style/textViewLight"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter Par"/>
+
+    <EditText
+        android:id="@+id/card_emichannelId"
+        style="@style/textViewLight"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Emi Plan id" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_weight="2">
+
+        <EditText
+            android:id="@+id/etBankCode"
+            style="@style/textViewLight"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="Enter Bank code"/>
+
+        <EditText
+            android:id="@+id/etChannelCode"
+            style="@style/textViewLight"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="Enter Channel code"/>
+    </LinearLayout>
+
+    <RadioGroup
+        android:id="@+id/rg_auth_mode_card"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/dimen_16dp"
+        android:orientation="horizontal">
+
+        <RadioButton
+            android:id="@+id/rb_otp_card"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="OTP" />
+
+        <RadioButton
+            android:id="@+id/rb_pin_card"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="PIN" />
+    </RadioGroup>
+
+    <Button
+        android:id="@+id/proceed_tokenized_card"
+        style="@style/textViewLight"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/paytm_blue"
+        android:text="@string/proceed" />
+
+
+</LinearLayout>

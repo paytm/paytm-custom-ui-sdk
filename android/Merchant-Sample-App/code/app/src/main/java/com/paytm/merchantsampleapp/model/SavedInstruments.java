@@ -46,6 +46,12 @@ public class SavedInstruments implements BaseDataModel {
 
     private String subventionType;
 
+    private boolean isCardCoft;
+
+    private boolean isEligibleForCoft;
+
+    private boolean isCoftPaymentSupported;
+
     @SerializedName("priority")
     @Expose
     private String priority;
@@ -208,6 +214,18 @@ public class SavedInstruments implements BaseDataModel {
 
     public String getPriority() {
         return priority;
+    }
+
+    public boolean isCardCoFT() {
+        return isCardCoft;
+    }
+
+    public boolean isEligibleForCoFT() {
+        return isEligibleForCoft;
+    }
+
+    public boolean isCoFTPaymentSupported() {
+        return isCoftPaymentSupported;
     }
 }
 

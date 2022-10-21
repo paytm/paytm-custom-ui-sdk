@@ -13,7 +13,7 @@ public class MerchantPayMethod implements BaseDataModel {
     private String displayName;
     private ArrayList<PayChannelOption> payChannelOptions = null;
     private IsDisabled isDisabled;
-    private HashMap<String, Object> additionalProperties = new HashMap<String, Object>();
+    private final HashMap<String, Object> additionalProperties = new HashMap<String, Object>();
 
     public String getPayMethod() {
         return payMethod;
